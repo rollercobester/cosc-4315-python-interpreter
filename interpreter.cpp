@@ -8,7 +8,7 @@ using namespace std;
 
 // Token structure
 struct Token {
-    enum TokenType { INT, PLUS, EOF_TOKEN };
+    enum TokenType { INT, PLUS, MINUS, EOF_TOKEN };
     TokenType type;
     char value;
 
@@ -42,6 +42,10 @@ public:
             Token token(Token::PLUS, current_char);
             ++pos;
             return token;
+        } else if (current_char == '-') {
+            Token token(Token::MINUS, current_char);
+            ++pos;
+            return token;
         } else {
             cout << "Error: Invalid character encountered: " << current_char << endl;
             exit(1);
@@ -63,7 +67,10 @@ public:
         eat(Token::INT);
 
         Token op = current_token;
-        eat(Token::PLUS);
+        if (op.type == Token::PLUS)
+            eat(Token::PLUS);
+        else
+            eat(Token::MINUS);
         
         Token right = current_token;
         eat(Token::INT);
@@ -71,12 +78,16 @@ public:
         int int1 = left.value - '0';
         int int2 = right.value - '0';
 
-        return int1 + int2;
+
+        if (op.type == Token::PLUS)
+            return int1 + int2;
+        else
+            return int1 - int2;
     }
 };
 
 int main() {
-    Interpreter i("9+4");
+    Interpreter i("9-4");
     int result = i.expr();
     cout << "Result: " << result << endl;
 }
