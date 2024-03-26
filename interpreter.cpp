@@ -23,7 +23,7 @@ private:
     Token current_token;
     char current_char;
 public:
-    Interpreter(string input) : current_token(get_next_token()) {
+    Interpreter(string input) : current_token(Token(Token::EOF_TOKEN, '\0')) {
         text = input;
         pos = 0;
         current_char = text[pos];
@@ -91,7 +91,6 @@ public:
                 advance();
                 return Token(Token::DIV, '/');
             }
-
 
             error("Error: Invalid character encountered");
         }
