@@ -82,6 +82,17 @@ public:
                 return Token(Token::MINUS, '-');
             }
 
+            if (current_char == '*') {
+                advance();
+                return Token(Token::MULT, '*');
+            }
+
+            if (current_char == '/') {
+                advance();
+                return Token(Token::DIV, '/');
+            }
+
+
             error("Error: Invalid character encountered");
         }
 
@@ -131,7 +142,7 @@ public:
 };
 
 int main() {
-    Interpreter i("92-44");
+    Interpreter i("2+1");
     int result = i.expr();
     cout << "Result: " << result << endl;
 }
