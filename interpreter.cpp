@@ -85,37 +85,7 @@ public:
             error("Error: Invalid character encountered");
         }
 
-<<<<<<< HEAD
         return Token(Token::EOF_TOKEN, '\0');
-=======
-        char current_char = text[pos];
-
-        if (isdigit(current_char)) {
-            Token token(Token::INT, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '+') {
-            Token token(Token::PLUS, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '-') {
-            Token token(Token::MINUS, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '*') {
-            Token token(Token::MULT, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '/') {
-            Token token(Token::DIV, current_char);
-            ++pos;
-            return token;
-        }
-        else {
-            cout << "Error: Invalid character encountered: " << current_char << endl;
-            exit(1);
-        }
->>>>>>> 14d47021b2c4f9869063e284462358634752b741
     }
 
     void eat(Token::TokenType type) {
@@ -149,7 +119,6 @@ public:
         int int1 = left.value - '0';
         int int2 = right.value - '0';
 
-
         if (op.type == Token::PLUS)
             return int1 + int2;
         else if (op.type == Token::MINUS)
@@ -166,11 +135,7 @@ public:
 };
 
 int main() {
-<<<<<<< HEAD
     Interpreter i("92-44");
-=======
-    Interpreter i("9/4");
->>>>>>> 14d47021b2c4f9869063e284462358634752b741
     int result = i.expr();
     cout << "Result: " << result << endl;
 }
