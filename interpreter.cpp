@@ -26,6 +26,11 @@ public:
         cout << text << endl;
     }
 
+    void error(string error_message) {
+        cout << error_message << endl;
+        exit(1);
+    }
+
     Token get_next_token() {
 
         if (pos >= text.length()) {
