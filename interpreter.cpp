@@ -1,147 +1,75 @@
-
+#ifndef INTERPRETER_CPP
+#define INTERPRETER_CPP
 
 #include <iostream>
-#include <string>
-#include <cctype>
+#include "lexer.cpp"
+#include "token.cpp"
 
 using namespace std;
 
-// Token structure
-struct Token {
-    enum TokenType { INT, PLUS, MINUS, MULT, DIV, EOF_TOKEN };
-    TokenType type;
-    string value;
-
-    Token(TokenType t, string v) :  type(t), value(v) {}
-    Token(const Token& token) : type(token.type), value(token.value) {}
-};
-
 class Interpreter {
 private:
-    string text;
-    size_t pos;
+    Lexer lexer;
     Token current_token;
-    char current_char;
 public:
-    Interpreter(string input) : current_token(Token(Token::EOF_TOKEN, "")) {
-        text = input;
-        pos = 0;
-        current_char = text[pos];
-        cout << text << endl;
-    }
+    Interpreter(Lexer &_) : lexer(_), current_token(lexer.get_next_token()) {}
 
-    void error(string error_message) {
-        cout << error_message << endl;
-        exit(1);
-    }
-
-    void advance() {
-        pos++;
-        if (pos >= text.length()) {
-            current_char = '\0';
+    void eat(Token::TokenType type) {
+        if (current_token.type == type) {
+            current_token = lexer.get_next_token();
         } else {
-            current_char = text[pos];
+            error();
         }
     }
 
-    void skip_whitespace() {
-        while (current_char != '\0' && current_char == ' ') {
-            advance();
-        }
+    int factor() {
+        Token token = current_token;
+        eat(Token::INT);
+        return stoi(token.value);
     }
 
-    string integer() {
-        string result = "";
-        while (current_char != '\0' && isdigit(current_char)) {
-            result += current_char;
-            advance();
+    int term() {
+        int result = factor();
+        while (current_token.type == Token::MUL || current_token.type == Token::DIV) {
+            Token operator_token = current_token;
+            if (operator_token.type == Token::MUL) {
+                eat(Token::MUL);
+                result = result * factor();
+            } else {
+                eat(Token::DIV);
+                result = result / factor();
+            }
         }
         return result;
     }
 
-    Token get_next_token() {
-
-        while (current_char != '\0') {
-
-            if (current_char == ' ') {
-                skip_whitespace();
-                continue;
-            }
-            
-            if (isdigit(current_char)) {
-                return Token(Token::INT, integer());
-            }
-
-            if (current_char == '+') {
-                advance();
-                return Token(Token::PLUS, "+");
-            }
-
-            if (current_char == '-') {
-                advance();
-                return Token(Token::MINUS, "-");
-            }
-
-            if (current_char == '*') {
-                advance();
-                return Token(Token::MULT, "*");
-            }
-
-            if (current_char == '/') {
-                advance();
-                return Token(Token::DIV, "/");
-            }
-
-            error("Error: Invalid character encountered");
-        }
-
-        return Token(Token::EOF_TOKEN, "");
-    }
-
-    void eat(Token::TokenType type) {
-        if (static_cast<int>(current_token.type) == static_cast<int>(type)) {
-            current_token = get_next_token();
-        } else {
-            error("Error: Unexpected token type encountered");
-        }
-    }
-
     int expr() {
+        int result = term();
+        while (current_token.type == Token::ADD || current_token.type == Token::SUB) {
+            Token operator_token = current_token;
+            if (operator_token.type == Token::ADD) {
+                eat(Token::ADD);
+                result += term();
+            } else {
+                eat(Token::SUB);
+                result -= term();
+            }
+        }
+        return result;
+    }
 
-        current_token = get_next_token();
-        
-        Token left = current_token;
-        eat(Token::INT);
-
-        Token op = current_token;
-        if (op.type == Token::PLUS)
-            eat(Token::PLUS);
-        else if (op.type == Token::MINUS)
-            eat(Token::MINUS);
-        else if (op.type == Token::MULT)
-            eat(Token::MULT);
-        else
-            eat(Token::DIV);
-        
-        Token right = current_token;
-        eat(Token::INT);
-
-        int int1 = stoi(left.value);
-        int int2 = stoi(right.value);
-
-        if (op.type == Token::PLUS)
-            return int1 + int2;
-        else if (op.type == Token::MINUS)
-            return int1 - int2;
-        else if (op.type == Token::MULT)
-            return int1 * int2;
-        else
-            return int1 / int2;
+    void error() {
+        cout << "Error: invalid syntax" << endl;
+        exit(1);
     }
 };
 
+#endif
+
 int main() {
-    Interpreter i("1-2");
-    int result = i.expr();
+    Lexer lexer("1*2+3*4");
+    Interpreter interpreter(lexer);
+    int result = interpreter.expr();
     cout << "Result: " << result << endl;
+    return 0;
 }
