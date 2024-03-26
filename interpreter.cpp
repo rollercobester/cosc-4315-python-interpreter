@@ -128,10 +128,6 @@ public:
         else
             return int1 / int2;
     }
-
-    void ignoreWhiteSpace() {
-        
-    }
 };
 
 int main() {
