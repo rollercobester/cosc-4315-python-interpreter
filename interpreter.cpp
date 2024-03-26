@@ -21,8 +21,12 @@ private:
     string text;
     size_t pos;
     Token current_token;
+    char current_char;
 public:
-    Interpreter(string input) : text(input), pos(0), current_token(get_next_token()) { 
+    Interpreter(string input) : current_token(get_next_token()) {
+        text = input;
+        pos = 0;
+        current_char = text[pos];
         cout << text << endl;
     }
 
@@ -31,43 +35,71 @@ public:
         exit(1);
     }
 
+    void advance() {
+        pos++;
+        if (pos >= text.length()) {
+            current_char = '\0';
+        } else {
+            current_char = text[pos];
+        }
+    }
+
+    void skip_whitespace() {
+        while (current_char != '\0' && current_char == ' ') {
+            advance();
+        }
+    }
+
+    int integer() {
+        int result = 0;
+        while (current_char != '\0' && isdigit(current_char)) {
+            result = result * 10 + (current_char - '0');
+            advance();
+        }
+        return result;
+    }
+
     Token get_next_token() {
 
-        if (pos >= text.length()) {
-            return Token(Token::EOF_TOKEN, '0');
+        while (current_char != '\0') {
+
+            if (current_char == ' ') {
+                skip_whitespace();
+                continue;
+            }
+            
+            if (isdigit(current_char)) {
+                return Token(Token::INT, integer());
+            }
+
+            if (current_char == '+') {
+                advance();
+                return Token(Token::PLUS, '+');
+            }
+
+            if (current_char == '-') {
+                advance();
+                return Token(Token::MINUS, '-');
+            }
+
+            error("Error: Invalid character encountered");
         }
 
-        char current_char = text[pos];
-
-        if (isdigit(current_char)) {
-            Token token(Token::INT, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '+') {
-            Token token(Token::PLUS, current_char);
-            ++pos;
-            return token;
-        } else if (current_char == '-') {
-            Token token(Token::MINUS, current_char);
-            ++pos;
-            return token;
-        } else {
-            cout << "Error: Invalid character encountered: " << current_char << endl;
-            exit(1);
-        }
+        return Token(Token::EOF_TOKEN, '\0');
     }
 
     void eat(Token::TokenType type) {
         if (static_cast<int>(current_token.type) == static_cast<int>(type)) {
             current_token = get_next_token();
         } else {
-            cout << "Error: Unexpected token type encountered: " << current_token.type << endl;
-            exit(1);
+            error("Error: Unexpected token type encountered");
         }
     }
 
     int expr() {
 
+        current_token = get_next_token();
+        
         Token left = current_token;
         eat(Token::INT);
 
@@ -92,7 +124,7 @@ public:
 };
 
 int main() {
-    Interpreter i("9-4");
+    Interpreter i("92-44");
     int result = i.expr();
     cout << "Result: " << result << endl;
 }
