@@ -8,7 +8,7 @@ using namespace std;
 
 // Token structure
 struct Token {
-    enum TokenType { INT, PLUS, MINUS, EOF_TOKEN };
+    enum TokenType { INT, PLUS, MINUS, MULT, DIV, EOF_TOKEN };
     TokenType type;
     char value;
 
@@ -85,7 +85,37 @@ public:
             error("Error: Invalid character encountered");
         }
 
+<<<<<<< HEAD
         return Token(Token::EOF_TOKEN, '\0');
+=======
+        char current_char = text[pos];
+
+        if (isdigit(current_char)) {
+            Token token(Token::INT, current_char);
+            ++pos;
+            return token;
+        } else if (current_char == '+') {
+            Token token(Token::PLUS, current_char);
+            ++pos;
+            return token;
+        } else if (current_char == '-') {
+            Token token(Token::MINUS, current_char);
+            ++pos;
+            return token;
+        } else if (current_char == '*') {
+            Token token(Token::MULT, current_char);
+            ++pos;
+            return token;
+        } else if (current_char == '/') {
+            Token token(Token::DIV, current_char);
+            ++pos;
+            return token;
+        }
+        else {
+            cout << "Error: Invalid character encountered: " << current_char << endl;
+            exit(1);
+        }
+>>>>>>> 14d47021b2c4f9869063e284462358634752b741
     }
 
     void eat(Token::TokenType type) {
@@ -106,8 +136,12 @@ public:
         Token op = current_token;
         if (op.type == Token::PLUS)
             eat(Token::PLUS);
-        else
+        else if (op.type == Token::MINUS)
             eat(Token::MINUS);
+        else if (op.type == Token::MULT)
+            eat(Token::MULT);
+        else
+            eat(Token::DIV);
         
         Token right = current_token;
         eat(Token::INT);
@@ -118,13 +152,25 @@ public:
 
         if (op.type == Token::PLUS)
             return int1 + int2;
-        else
+        else if (op.type == Token::MINUS)
             return int1 - int2;
+        else if (op.type == Token::MULT)
+            return int1 * int2;
+        else
+            return int1 / int2;
+    }
+
+    void ignoreWhiteSpace() {
+        
     }
 };
 
 int main() {
+<<<<<<< HEAD
     Interpreter i("92-44");
+=======
+    Interpreter i("9/4");
+>>>>>>> 14d47021b2c4f9869063e284462358634752b741
     int result = i.expr();
     cout << "Result: " << result << endl;
 }
