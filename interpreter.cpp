@@ -2,74 +2,62 @@
 #define INTERPRETER_CPP
 
 #include <iostream>
-#include "lexer.cpp"
+#include <stdexcept>
+#include "ast.cpp"
+#include "parser.cpp"
 #include "token.cpp"
 
 using namespace std;
 
 class Interpreter {
-private:
-    Lexer lexer;
-    Token current_token;
-public:
-    Interpreter(Lexer &_) : lexer(_), current_token(lexer.get_next_token()) {}
+    
+  private:
+    Parser parser;
 
-    void eat(Token::TokenType type) {
-        if (current_token.type == type) {
-            current_token = lexer.get_next_token();
+  public:
+    Interpreter(Parser& parser) : parser(parser) {}
+
+    int visit_BinOp(BinOp* node) {
+        if (node->op.type == Token::ADD) {
+            return visit(node->left) + visit(node->right);
+        } else if (node->op.type == Token::SUB) {
+            return visit(node->left) - visit(node->right);
+        } else if (node->op.type == Token::MUL) {
+            return visit(node->left) * visit(node->right);
+        } else if (node->op.type == Token::DIV) {
+            return visit(node->left) / visit(node->right);
+        }
+        throw runtime_error("Invalid operation");
+    }
+
+    int visit_Num(Num* node) {
+        return node->value;
+    }
+
+    int visit(AST* node) {
+        if (dynamic_cast<BinOp*>(node)) {
+            return visit_BinOp(dynamic_cast<BinOp*>(node));
+        } else if (dynamic_cast<Num*>(node)) {
+            return visit_Num(dynamic_cast<Num*>(node));
         } else {
-            error();
+            throw runtime_error("Unknown AST node");
         }
     }
 
-    int factor() {
-        Token token = current_token;
-        eat(Token::INT);
-        return stoi(token.value);
-    }
-
-    int term() {
-        int result = factor();
-        while (current_token.type == Token::MUL || current_token.type == Token::DIV) {
-            Token operator_token = current_token;
-            if (operator_token.type == Token::MUL) {
-                eat(Token::MUL);
-                result = result * factor();
-            } else {
-                eat(Token::DIV);
-                result = result / factor();
-            }
-        }
-        return result;
-    }
-
-    int expr() {
-        int result = term();
-        while (current_token.type == Token::ADD || current_token.type == Token::SUB) {
-            Token operator_token = current_token;
-            if (operator_token.type == Token::ADD) {
-                eat(Token::ADD);
-                result += term();
-            } else {
-                eat(Token::SUB);
-                result -= term();
-            }
-        }
-        return result;
-    }
-
-    void error() {
-        cout << "Error: invalid syntax" << endl;
-        exit(1);
+    int interpret() {
+        AST* tree = parser.parse();
+        return visit(tree);
     }
 };
 
 #endif
 
 int main() {
-    Lexer lexer("1*2+3*4");
-    Interpreter interpreter(lexer);
-    int result = interpreter.expr();
+    Lexer lexer("2*(2+3)*3+4");
+    //Lexer lexer("7 + (((3 + 2)))");
+    Parser parser(lexer);
+    Interpreter interpreter(parser);
+    int result = interpreter.interpret();
     cout << "Result: " << result << endl;
     return 0;
 }

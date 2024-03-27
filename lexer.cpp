@@ -3,17 +3,24 @@
 
 #include <cctype>
 #include <iostream>
+#include <stdexcept>
 #include "token.cpp"
 
 using namespace std;
 
 class Lexer {
-private:
+
+  private:
     string text;
     size_t pos;
     char current_char;
-public:
+
+  public:
     Lexer(string input) : text(input), pos(0), current_char(text[pos]) {}
+
+    void error() {
+        throw runtime_error("Invalid character");
+    }
 
     void advance() {
         pos = pos + 1;
@@ -65,16 +72,18 @@ public:
                 advance();
                 return Token(Token::DIV, "/");
             }
+            if (current_char == '(') {
+                advance();
+                return Token(Token::L_PAREN, "(");
+            }
+            if (current_char == ')') {
+                advance();
+                return Token(Token::R_PAREN, ")");
+            }
             error();
         }
         return Token();
     }
-
-    void error() {
-        cout << "Error: invalid character" << endl;
-        exit(1);
-    }
-
 };
 
 #endif
