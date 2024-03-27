@@ -33,4 +33,26 @@ class Num : public AST {
     Num(Token token) : token(token), value(stoi(token.value)) {}
 };
 
+class Assign : public AST {
+  public:
+    AST* left;
+    Token op;
+    AST* right;
+
+    Assign(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
+};
+
+class VAR : public AST {
+  public:
+    Token token;
+    int value;
+
+    VAR(Token token) : token(token), value(stoi(token.value)) {}
+};
+
+class NoOp : public AST {
+  public:
+    ;
+};
+
 #endif
