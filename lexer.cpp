@@ -1,4 +1,4 @@
-#ifndef LEXER_CPP  // Header guard to prevent MULiple inclusions
+#ifndef LEXER_CPP
 #define LEXER_CPP
 
 #include <cctype>

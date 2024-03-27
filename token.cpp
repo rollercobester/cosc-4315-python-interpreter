@@ -1,4 +1,4 @@
-#ifndef TOKEN_CPP  // Header guard to prevent multiple inclusions
+#ifndef TOKEN_CPP
 #define TOKEN_CPP
 
 #include <string>
