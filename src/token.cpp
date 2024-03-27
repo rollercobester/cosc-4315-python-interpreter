@@ -6,7 +6,7 @@
 using namespace std;
 
 struct Token {
-    enum TokenType { INT, ADD, SUB, MUL, DIV, L_PAREN, R_PAREN,EOF_TOKEN };
+    enum TokenType { INT, ADD, SUB, MUL, DIV, L_PAREN, R_PAREN, EOF_TOKEN };
     TokenType type;
     string value;
 
