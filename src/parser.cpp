@@ -30,7 +30,13 @@ class Parser {
 
     AST* factor() {
         Token token = current_token;
-        if (token.type == Token::INT) {
+        if (token.type == Token::PLUS) {
+            eat(Token::PLUS);
+            return new UnaryOp(token, factor());
+        } else if (token.type == Token::MINUS) {
+            eat(Token::MINUS);
+            return new UnaryOp(token, factor());
+        } else if (token.type == Token::INT) {
             eat(Token::INT);
             return new Num(token);
         } else if (token.type == Token::L_PAREN) {
@@ -46,7 +52,7 @@ class Parser {
 
     AST* term() {
         AST* node = factor();
-        while (current_token.type == Token::MUL || current_token.type == Token::DIV) {
+        while (current_token.type == Token::TIMES || current_token.type == Token::DIVIDE) {
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOp(node, operator_token, factor());
@@ -56,7 +62,7 @@ class Parser {
 
     AST* expr() {
         AST* node = term();
-        while (current_token.type == Token::ADD || current_token.type == Token::SUB) {
+        while (current_token.type == Token::PLUS || current_token.type == Token::MINUS) {
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOp(node, operator_token, term());

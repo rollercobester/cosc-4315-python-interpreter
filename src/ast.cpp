@@ -8,7 +8,14 @@ class AST {
     virtual ~AST() {}
 };
 
-// Class representing binary operations
+class UnaryOp : public AST {
+  public:
+    Token op;
+    AST* expr;
+
+    UnaryOp(Token op, AST* expr) : op(op), expr(expr) {}
+};
+
 class BinOp : public AST {
   public:
     AST* left;
@@ -18,7 +25,6 @@ class BinOp : public AST {
     BinOp(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
-// Class representing numeric literals
 class Num : public AST {
   public:
     Token token;

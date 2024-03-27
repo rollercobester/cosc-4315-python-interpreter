@@ -31,19 +31,36 @@ class Scanner {
         }
     }
 
+    char peek() {
+        if (pos >= text.length() - 1) {
+            return '\0';
+        } else {
+            return text[pos + 1];
+        }
+    }
+
     void skip_whitespace() {
         while (current_char != '\0' && current_char == ' ') {
             advance();
         }
     }
 
-    string integer() {
+    Token integer() {
         string result = "";
         while (current_char != '\0' && isdigit(current_char)) {
             result += current_char;
             advance();
         }
-        return result;
+        return Token(Token::INT, result);
+    }
+
+    Token id() {
+        string result = "";
+        while (current_char != '\0' && isalnum(current_char)) {
+            result += current_char;
+            advance();
+        }
+        return Token(keywords.at(result), result);
     }
 
     Token get_next_token() {
@@ -51,32 +68,68 @@ class Scanner {
             if (current_char == ' ') {
                 skip_whitespace();
                 continue;
-            }
-            if (isdigit(current_char)) {
-                string int_str = integer();
-                return Token(Token::INT, int_str);
-            }
-            if (current_char == '+') {
+            } else if (isdigit(current_char)) {
+                return integer();
+            } else if (current_char == '=' && peek() == '=') {
                 advance();
-                return Token(Token::ADD, "+");
-            }
-            if (current_char == '-') {
                 advance();
-                return Token(Token::SUB, "-");
-            }
-            if (current_char == '*') {
+                return Token(Token::EQUALS_EQUALS, "==");
+            } else if (current_char == '!' && peek() == '=') {
                 advance();
-                return Token(Token::MUL, "*");
-            }
-            if (current_char == '/') {
                 advance();
-                return Token(Token::DIV, "/");
-            }
-            if (current_char == '(') {
+                return Token(Token::NOT_EQUALS, "!=");
+            } else if (current_char == '<' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::LESS_THAN_EQUALS, "<=");
+            } else if (current_char == '>' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::GREATER_THAN_EQUALS, ">=");
+            } else if (current_char == '+' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::PLUS_EQUALS, "+=");
+            } else if (current_char == '-' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::MINUS_EQUALS, "-=");
+            } else if (current_char == '*' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::TIMES_EQUALS, "*=");
+            } else if (current_char == '/' && peek() == '=') {
+                advance();
+                advance();
+                return Token(Token::DIVIDE_EQUALS, "/=");
+            } else if (current_char == '=') {
+                advance();
+                return Token(Token::EQUALS, "=");
+            } else if (current_char == '!') {
+                advance();
+                return Token(Token::EXCLAMATION, "!");
+            } else if (current_char == '<') {
+                advance();
+                return Token(Token::LESS_THAN, "<");
+            } else if (current_char == '>') {
+                advance();
+                return Token(Token::GREATER_THAN, ">");
+            } else if (current_char == '+') {
+                advance();
+                return Token(Token::PLUS, "+");
+            } else if (current_char == '-') {
+                advance();
+                return Token(Token::MINUS, "-");
+            } else if (current_char == '*') {
+                advance();
+                return Token(Token::TIMES, "*");
+            } else if (current_char == '/') {
+                advance();
+                return Token(Token::DIVIDE, "/");
+            } else if (current_char == '(') {
                 advance();
                 return Token(Token::L_PAREN, "(");
-            }
-            if (current_char == ')') {
+            } else if (current_char == ')') {
                 advance();
                 return Token(Token::R_PAREN, ")");
             }
