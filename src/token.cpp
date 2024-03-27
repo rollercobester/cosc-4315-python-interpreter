@@ -20,7 +20,7 @@ struct Token {
         // punctuation
         COMMA, DOT, SEMICOLON, COLON, L_PAREN, R_PAREN, END_LINE, EOF_TOKEN,
 
-        // variable
+        // variables
         INT, VAR_ID,
 
         // keywords
