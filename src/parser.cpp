@@ -4,17 +4,17 @@
 #include <iostream>
 #include <stdexcept>
 #include "ast.cpp"
-#include "lexer.cpp"
+#include "scanner.cpp"
 #include "token.cpp"
 
 class Parser {
     
   private:
-    Lexer lexer;
+    Scanner scanner;
     Token current_token;
 
   public:
-    Parser(Lexer &_) : lexer(_), current_token(lexer.get_next_token()) {}
+    Parser(Scanner &_) : scanner(_), current_token(scanner.get_next_token()) {}
 
     void error() {
         throw runtime_error("Invalid syntax");
@@ -22,7 +22,7 @@ class Parser {
 
     void eat(Token::TokenType type) {
         if (current_token.type == type) {
-            current_token = lexer.get_next_token();
+            current_token = scanner.get_next_token();
         } else {
             error();
         }

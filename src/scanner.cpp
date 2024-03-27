@@ -1,5 +1,5 @@
-#ifndef LEXER_CPP
-#define LEXER_CPP
+#ifndef SCANNER_CPP
+#define SCANNER_CPP
 
 #include <cctype>
 #include <iostream>
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class Lexer {
+class Scanner {
 
   private:
     string text;
@@ -16,7 +16,7 @@ class Lexer {
     char current_char;
 
   public:
-    Lexer(string input) : text(input), pos(0), current_char(text[pos]) {}
+    Scanner(string input) : text(input), pos(0), current_char(text[pos]) {}
 
     void error() {
         throw runtime_error("Invalid character");

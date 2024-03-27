@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "ast.cpp"
 #include "parser.cpp"
+#include "scanner.cpp"
 #include "token.cpp"
 
 using namespace std;
@@ -53,8 +54,8 @@ class Interpreter {
 #endif
 
 int main() {
-    Lexer lexer("2*(2+3)*3+4");
-    Parser parser(lexer);
+    Scanner scanner("2*(2+3)*3+4");
+    Parser parser(scanner);
     Interpreter interpreter(parser);
     int result = interpreter.interpret();
     cout << "Result: " << result << endl;
