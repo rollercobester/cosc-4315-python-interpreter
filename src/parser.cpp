@@ -48,11 +48,7 @@ class Parser {
         AST* node = factor();
         while (current_token.type == Token::MUL || current_token.type == Token::DIV) {
             Token operator_token = current_token;
-            if (operator_token.type == Token::MUL) {
-                eat(Token::MUL);
-            } else {
-                eat(Token::DIV);
-            }
+            eat(operator_token.type);
             node = new BinOp(node, operator_token, factor());
         }
         return node;
@@ -62,11 +58,7 @@ class Parser {
         AST* node = term();
         while (current_token.type == Token::ADD || current_token.type == Token::SUB) {
             Token operator_token = current_token;
-            if (operator_token.type == Token::ADD) {
-                eat(Token::ADD);
-            } else {
-                eat(Token::SUB);
-            }
+            eat(operator_token.type);
             node = new BinOp(node, operator_token, term());
         }
         return node;

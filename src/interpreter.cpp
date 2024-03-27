@@ -54,7 +54,6 @@ class Interpreter {
 
 int main() {
     Lexer lexer("2*(2+3)*3+4");
-    //Lexer lexer("7 + (((3 + 2)))");
     Parser parser(lexer);
     Interpreter interpreter(parser);
     int result = interpreter.interpret();
