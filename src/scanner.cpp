@@ -73,7 +73,7 @@ class Scanner {
             } else if (current_char == '=' && peek() == '=') {
                 advance();
                 advance();
-                return Token(Token::EQUALS_EQUALS, "==");
+                return Token(Token::EQUALS, "==");
             } else if (current_char == '!' && peek() == '=') {
                 advance();
                 advance();
@@ -104,7 +104,7 @@ class Scanner {
                 return Token(Token::DIVIDE_EQUALS, "/=");
             } else if (current_char == '=') {
                 advance();
-                return Token(Token::EQUALS, "=");
+                return Token(Token::ASSIGN, "=");
             } else if (current_char == '!') {
                 advance();
                 return Token(Token::EXCLAMATION, "!");

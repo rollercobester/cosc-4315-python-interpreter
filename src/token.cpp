@@ -9,10 +9,10 @@ using namespace std;
 struct Token {
     enum TokenType { 
         // boolean operators
-        EQUALS_EQUALS, NOT_EQUALS, LESS_THAN_EQUALS, GREATER_THAN_EQUALS, LESS_THAN, GREATER_THAN, EXCLAMATION,
+        EQUALS, NOT_EQUALS, LESS_THAN_EQUALS, GREATER_THAN_EQUALS, LESS_THAN, GREATER_THAN, EXCLAMATION,
 
         // assignment operators
-        PLUS_EQUALS, MINUS_EQUALS, TIMES_EQUALS, DIVIDE_EQUALS, EQUALS,
+        PLUS_EQUALS, MINUS_EQUALS, TIMES_EQUALS, DIVIDE_EQUALS, ASSIGN,
 
         // mathematical operators
         PLUS, MINUS, TIMES, DIVIDE,
