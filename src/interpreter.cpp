@@ -16,7 +16,7 @@ class Interpreter {
     Parser parser;
 
   public:
-    Interpreter(Parser& parser) : parser(parser) {}
+    Interpreter(Parser& _) : parser(_) {}
 
     int visit_BinOp(BinOp* node) {
         if (node->op.type == Token::ADD) {
