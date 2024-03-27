@@ -14,7 +14,7 @@ struct Token {
         // assignment operators
         PLUS_EQUALS, MINUS_EQUALS, TIMES_EQUALS, DIVIDE_EQUALS, EQUALS,
 
-        // mathermatical tokens
+        // mathematical operators
         PLUS, MINUS, TIMES, DIVIDE,
 
         // punctuation
