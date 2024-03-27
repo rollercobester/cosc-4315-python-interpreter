@@ -11,7 +11,7 @@ struct Token {
     string value;
 
     Token() : type(EOF_TOKEN), value("") {}
-    Token(TokenType t, string v) :  type(t), value(v) {}
+    Token(TokenType t, string v) : type(t), value(v) {}
     Token(const Token& token) : type(token.type), value(token.value) {}
 };
 
