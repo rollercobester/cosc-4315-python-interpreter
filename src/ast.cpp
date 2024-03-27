@@ -1,6 +1,7 @@
 #ifndef AST_CPP
 #define AST_CPP
 
+#include <vector>
 #include "token.cpp"
 
 class AST {
@@ -33,6 +34,12 @@ class Num : public AST {
     Num(Token token) : token(token), value(stoi(token.value)) {}
 };
 
+class Compound : public AST {
+  public:
+    vector<AST*> children;
+    Compound() {}
+};
+
 class Assign : public AST {
   public:
     AST* left;
@@ -42,12 +49,12 @@ class Assign : public AST {
     Assign(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
-class VAR : public AST {
+class Variable : public AST {
   public:
     Token token;
     int value;
 
-    VAR(Token token) : token(token), value(stoi(token.value)) {}
+    Variable(Token token) : token(token), value(stoi(token.value)) {}
 };
 
 class NoOp : public AST {

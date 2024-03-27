@@ -70,6 +70,50 @@ class Parser {
         return node;
     }
 
+    AST* compound_statement() {
+        Compound* root = new Compound();
+        root->children.push_back(statement());
+        while (current_token.type == Token::END_LINE) {
+            eat(Token::END_LINE);
+            root->children.push_back(statement());
+        }
+        if (current_token.type == Token::ID) {
+            error();
+        }
+        return root;
+    }
+
+    AST* statement() {
+        AST* node;
+        if (current_token.type == Token::DEF) {
+            node = compound_statement();
+        } else if (current_token.type == Token::ID) {
+            node = assignment_statement();
+        } else {
+            node = empty();
+        }
+        return node;
+    }
+
+    AST* assignment_statement() {
+        AST* left = variable();
+        Token token = current_token;
+        eat(Token::ASSIGN);
+        AST* right = expr();
+        return new Assign(left, token, right);
+    }
+
+    AST* variable() {
+        AST* node = new Variable(current_token);
+        eat(Token::ID);
+        return node;
+    }
+
+    AST* empty() {
+        AST* node = new NoOp();
+        return node;
+    }
+
     AST* parse() {
         return expr();
     }
