@@ -18,6 +18,7 @@ class Parser {
 
     void error() {
         throw runtime_error("Invalid syntax");
+        //exit(1);
     }
 
     void eat(Token::TokenType type) {

@@ -55,14 +55,13 @@ class Interpreter {
 
     void visit_Assign(Assign* node) {
         string var_name = node->left->value;
-        GLOBAL_SCOPE[var_name] = visit(node->right);
+        GLOBAL_SCOPE.insert({var_name, visit(node->right)});
     }
 
     int visit_Variable(Variable* node) {
         string var_name = node->value;
-        int val = GLOBAL_SCOPE[var_name];
         if (GLOBAL_SCOPE.find(var_name) != GLOBAL_SCOPE.end()) {
-            return val;
+            return GLOBAL_SCOPE.at(var_name);;
         } else {
             throw runtime_error(string("NameError: ") + var_name);
         }
@@ -91,7 +90,11 @@ class Interpreter {
 
     int interpret() {
         AST* tree = parser.parse();
-        return visit(tree);
+        visit(tree);
+        for (const auto& pair : GLOBAL_SCOPE) {
+            cout << pair.first << ": " << pair.second << endl;
+        }
+        return 0;
     }
 };
 
@@ -101,7 +104,6 @@ int main() {
     Scanner scanner("a = 2\nb = 3 + 2\njohn = 35\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
-    int result = interpreter.interpret();
-    cout << "Result: " << result << endl;
+    interpreter.interpret();
     return 0;
 }

@@ -20,6 +20,7 @@ class Scanner {
 
     void error() {
         throw runtime_error("Invalid character");
+        //exit(1);
     }
 
     void advance() {
@@ -60,7 +61,11 @@ class Scanner {
             result += current_char;
             advance();
         }
-        return Token(keywords.at(result), result);
+        if (keywords.find(result) != keywords.end()) {
+            return Token(keywords.at(result), result);
+        } else {
+            return Token(Token::ID, result);
+        }
     }
 
     Token get_next_token() {
@@ -70,6 +75,8 @@ class Scanner {
                 continue;
             } else if (isdigit(current_char)) {
                 return integer();
+            } else if (isalpha(current_char)) {
+                return id();
             } else if (current_char == '=' && peek() == '=') {
                 advance();
                 advance();
@@ -132,6 +139,9 @@ class Scanner {
             } else if (current_char == ')') {
                 advance();
                 return Token(Token::R_PAREN, ")");
+            } else if (current_char == '\n') {
+                advance();
+                return Token(Token::END_LINE, "\n");
             }
             error();
         }
