@@ -55,7 +55,11 @@ class Interpreter {
 
     void visit_Assign(Assign* node) {
         string var_name = node->left->value;
-        GLOBAL_SCOPE.insert({var_name, visit(node->right)});
+        if (GLOBAL_SCOPE.find(var_name) == GLOBAL_SCOPE.end()) {
+            GLOBAL_SCOPE.insert({var_name, visit(node->right)});
+        } else {
+            GLOBAL_SCOPE[var_name] = visit(node->right);
+        }
     }
 
     int visit_Variable(Variable* node) {
@@ -101,7 +105,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 2\nb = 3 + 2\njohn = 35\nhubert = 3 * 5");
+    Scanner scanner("a = 2\na =  3 + 2\njohn = 35\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();
