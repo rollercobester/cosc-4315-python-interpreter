@@ -98,7 +98,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("2--2*(2+3)*3+4");
+    Scanner scanner("a = 2\nb = 3 + 2\njohn = 35\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     int result = interpreter.interpret();
