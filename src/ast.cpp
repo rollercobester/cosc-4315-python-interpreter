@@ -40,22 +40,23 @@ class Compound : public AST {
     Compound() {}
 };
 
-class Assign : public AST {
-  public:
-    AST* left;
-    Token op;
-    AST* right;
-
-    Assign(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
-};
-
 class Variable : public AST {
   public:
     Token token;
-    int value;
+    string value;
 
-    Variable(Token token) : token(token), value(stoi(token.value)) {}
+    Variable(Token token) : token(token), value(token.value) {}
 };
+
+class Assign : public AST {
+  public:
+    Variable* left;
+    Token op;
+    AST* right;
+
+    Assign(Variable* left, Token op, AST* right) : left(left), op(op), right(right) {}
+};
+
 
 class NoOp : public AST {
   public:

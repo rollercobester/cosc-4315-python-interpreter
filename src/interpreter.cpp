@@ -14,6 +14,7 @@ class Interpreter {
     
   private:
     Parser parser;
+    unordered_map<string, int> GLOBAL_SCOPE;
 
   public:
     Interpreter(Parser& _) : parser(_) {}
@@ -44,6 +45,29 @@ class Interpreter {
         throw runtime_error("Invalid operation");
     }
 
+    void visit_Compound(Compound* node) {
+        for (AST* child : node->children) {
+            visit(child);
+        }
+    }
+
+    void visit_NoOp(NoOp* node) {}
+
+    void visit_Assign(Assign* node) {
+        string var_name = node->left->value;
+        GLOBAL_SCOPE[var_name] = visit(node->right);
+    }
+
+    int visit_Variable(Variable* node) {
+        string var_name = node->value;
+        int val = GLOBAL_SCOPE[var_name];
+        if (GLOBAL_SCOPE.find(var_name) != GLOBAL_SCOPE.end()) {
+            return val;
+        } else {
+            throw runtime_error(string("NameError: ") + var_name);
+        }
+    }
+
     int visit(AST* node) {
         if (dynamic_cast<BinOp*>(node)) {
             return visit_BinOp(dynamic_cast<BinOp*>(node));
@@ -51,9 +75,18 @@ class Interpreter {
             return visit_Num(dynamic_cast<Num*>(node));
         } else if (dynamic_cast<UnaryOp*>(node)) {
             return visit_UnaryOp(dynamic_cast<UnaryOp*>(node));
+        } else if (dynamic_cast<Compound*>(node)) {
+            visit_Compound(dynamic_cast<Compound*>(node));
+        } else if (dynamic_cast<NoOp*>(node)) {
+            visit_NoOp(dynamic_cast<NoOp*>(node));
+        } else if (dynamic_cast<Assign*>(node)) {
+            visit_Assign(dynamic_cast<Assign*>(node));
+        } else if (dynamic_cast<Variable*>(node)) {
+            visit_Variable(dynamic_cast<Variable*>(node));
         } else {
             throw runtime_error("Unknown AST node");
         }
+        return 0;
     }
 
     int interpret() {

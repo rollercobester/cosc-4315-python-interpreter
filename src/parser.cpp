@@ -96,15 +96,15 @@ class Parser {
     }
 
     AST* assignment_statement() {
-        AST* left = variable();
+        Variable* left = variable();
         Token token = current_token;
         eat(Token::ASSIGN);
         AST* right = expr();
         return new Assign(left, token, right);
     }
 
-    AST* variable() {
-        AST* node = new Variable(current_token);
+    Variable* variable() {
+        Variable* node = new Variable(current_token);
         eat(Token::ID);
         return node;
     }
@@ -115,7 +115,11 @@ class Parser {
     }
 
     AST* parse() {
-        return expr();
+        AST* node = compound_statement();
+        if (current_token.type != Token::EOF_TOKEN) {
+            error();
+        }
+        return node;
     }
 };
 
