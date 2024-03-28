@@ -46,8 +46,10 @@ class Parser {
             eat(Token::R_PAREN);
             return node;
         } else {
-            error();
-            return nullptr;
+            eat(Token::ID);
+            return new Variable(token);
+            //error();
+            //return nullptr;
         }
     }
 

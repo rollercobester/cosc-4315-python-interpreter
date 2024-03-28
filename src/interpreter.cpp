@@ -65,7 +65,7 @@ class Interpreter {
     int visit_Variable(Variable* node) {
         string var_name = node->value;
         if (GLOBAL_SCOPE.find(var_name) != GLOBAL_SCOPE.end()) {
-            return GLOBAL_SCOPE.at(var_name);;
+            return GLOBAL_SCOPE[var_name];
         } else {
             throw runtime_error(string("NameError: ") + var_name);
         }
@@ -85,7 +85,7 @@ class Interpreter {
         } else if (dynamic_cast<Assign*>(node)) {
             visit_Assign(dynamic_cast<Assign*>(node));
         } else if (dynamic_cast<Variable*>(node)) {
-            visit_Variable(dynamic_cast<Variable*>(node));
+            return visit_Variable(dynamic_cast<Variable*>(node));
         } else {
             throw runtime_error("Unknown AST node");
         }
@@ -105,7 +105,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 2\na =  3 + 2\njohn = 35\nhubert = 3 * 5");
+    Scanner scanner("a = 3\na = a + a * a\njohn = 35\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();
