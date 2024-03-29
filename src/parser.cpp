@@ -54,6 +54,9 @@ class Parser {
         } else if (token.type == Token::MINUS) {
             eat(Token::MINUS);
             return new UnaryOp(token, factor());
+        } else if (token.type == Token::BOOL) {
+            eat(Token::BOOL);
+            return new Bool(token);
         } else if (token.type == Token::INT) {
             eat(Token::INT);
             return new Num(token);

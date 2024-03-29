@@ -26,6 +26,14 @@ class BinOp : public AST {
     BinOp(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
+class Bool : public AST {
+  public:
+    Token token;
+    bool value;
+
+    Bool(Token token) : token(token), value(token.value == "True") {}
+};
+
 class Num : public AST {
   public:
     Token token;

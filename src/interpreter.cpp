@@ -7,6 +7,7 @@
 #include "parser.cpp"
 #include "scanner.cpp"
 #include "token.cpp"
+#include "var.cpp"
 
 using namespace std;
 
@@ -14,33 +15,40 @@ class Interpreter {
     
   private:
     Parser parser;
-    unordered_map<string, int> GLOBAL_SCOPE;
+    unordered_map<string, Var*> GLOBAL_SCOPE;
 
   public:
     Interpreter(Parser& _) : parser(_) {}
 
-    int visit_BinOp(BinOp* node) {
+    Var* visit_BinOp(BinOp* node) {
+        int left = dynamic_cast<VarInt*>(visit(node->left))->value;
+        int right = dynamic_cast<VarInt*>(visit(node->right))->value;
         if (node->op.type == Token::PLUS) {
-            return visit(node->left) + visit(node->right);
+            return new VarInt(left + right);
         } else if (node->op.type == Token::MINUS) {
-            return visit(node->left) - visit(node->right);
+            return new VarInt(left - right);
         } else if (node->op.type == Token::TIMES) {
-            return visit(node->left) * visit(node->right);
+            return new VarInt(left * right);
         } else if (node->op.type == Token::DIVIDE) {
-            return visit(node->left) / visit(node->right);
+            return new VarInt(left / right);
         }
         throw runtime_error("Invalid operation");
     }
 
-    int visit_Num(Num* node) {
-        return node->value;
+    Var* visit_Bool(Bool* node) {
+        return new VarBool(node->value);
     }
 
-    int visit_UnaryOp(UnaryOp* node) {
+    Var* visit_Num(Num* node) {
+        return new VarInt(node->value);
+    }
+
+    Var* visit_UnaryOp(UnaryOp* node) {
+        int value = dynamic_cast<VarInt*>(visit(node->expr))->value;
         if (node->op.type == Token::PLUS) {
-            return +visit(node->expr);
-        } else if (node->op.type == Token::MINUS){
-            return -visit(node->expr);
+            return new VarInt(+value);
+        } else if (node->op.type == Token::MINUS) {
+            return new VarInt(-value);
         }
         throw runtime_error("Invalid operation");
     }
@@ -62,7 +70,7 @@ class Interpreter {
         }
     }
 
-    int visit_Variable(Variable* node) {
+    Var* visit_Variable(Variable* node) {
         string var_name = node->value;
         if (GLOBAL_SCOPE.find(var_name) != GLOBAL_SCOPE.end()) {
             return GLOBAL_SCOPE[var_name];
@@ -71,9 +79,11 @@ class Interpreter {
         }
     }
 
-    int visit(AST* node) {
+    Var* visit(AST* node) {
         if (dynamic_cast<BinOp*>(node)) {
             return visit_BinOp(dynamic_cast<BinOp*>(node));
+        } else if (dynamic_cast<Bool*>(node)) {
+            return visit_Bool(dynamic_cast<Bool*>(node));
         } else if (dynamic_cast<Num*>(node)) {
             return visit_Num(dynamic_cast<Num*>(node));
         } else if (dynamic_cast<UnaryOp*>(node)) {
@@ -96,7 +106,12 @@ class Interpreter {
         AST* tree = parser.parse();
         visit(tree);
         for (const auto& pair : GLOBAL_SCOPE) {
-            cout << pair.first << ": " << pair.second << endl;
+            if (dynamic_cast<VarBool*>(pair.second)) {
+                cout << pair.first << ": " << dynamic_cast<VarBool*>(pair.second)->value << endl;
+            } else if (dynamic_cast<VarInt*>(pair.second)) {
+                cout << pair.first << ": " << dynamic_cast<VarInt*>(pair.second)->value << endl;
+            }
+            //cout << pair.first << ": " << pair.second->value << endl;
         }
         return 0;
     }
@@ -105,7 +120,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 3\"\"\"test\"\"\"\na = a + a * a\njohn = 35\nhubert = 3 * 5");
+    Scanner scanner("a = 2\"\"\"test\"\"\"\na = a + a * a\njohn = False\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();
