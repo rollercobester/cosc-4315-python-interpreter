@@ -1,23 +1,15 @@
-scale = 2
+# TestCase for:if-else with <
 
-def multiply(x, y):
-    return x * y
 
-def conditionalAddAndMultiply(x, y):
-    scale = 3
-    if y > 5:
-        if x > 2:
-            return multiply(x, scale)
-        else:
-            return multiply(x, scale)
-    else:
-        return add(x, y)
+x = 15 
+y = 21
+a = y * x + y + x
+b = a * 2 
 
-def add(x, y):
-    return x + y
+# if-else condition
+if b < 10 :
+    res = 1  
+else:
+    res = 0  
 
-#Function call within a function, nested conditional
-result = conditionalAddAndMultiply(add(1, 2), 6)
-
-print("Result =", result)
-
+print("res =", res)

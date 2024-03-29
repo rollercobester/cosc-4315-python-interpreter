@@ -1,35 +1,30 @@
-scale = 2 
 
-def computeFactor(value):
-    result = 1
-    if value > 10:
-        result = result + scale
-        if value > 15:
-            result = result + 1  # Adds 1 if over 15
-    else:
-        if value > 5:
-            result = result * 3  # Multiply by 3 if over 5
-    return result
+a = 10
+b = 5
+c = a + b
+d = a * b
 
-def addValue(num):
-    bias = 1 + num
-    bias = bias + scale
-    if num > 0:
-        bias = bias + 1  # add 1 if positive
-        if num > 5:
-            bias = bias + 1  # add 1 if over 5
-    return bias
+x = a * b + a + b * a + b + c + c * d
 
-def calculateResult(base, factor):
-    scale = 5  
-    factorAdjustment = base * factor + scale
-    finalResult = base + factorAdjustment 
-    return finalResult
+#Check if with many statements inside
+if x <= 100:
+    y = 5 + 4 * 3 
+    resA = 1
+    resB = y
+else:
+    y = 10 + 2 + 4 
+    resA = 0
+    resB = y
 
-inputValue = 16
-factor = computeFactor(inputValue)
-epsilon = addValue(inputValue) 
-result = calculateResult(factor, epsilon)
+if b < 6:
+    t1 = 3
+    t2 = 8
+    resC = t1 + t2
+else:
+    t1 = 12
+    t2 = 9
+    resC = t1 + t2
 
-print("Final Result =", result)
-
+print("resA =", resA)
+print("resB =", resB)
+print("resC =", resC)

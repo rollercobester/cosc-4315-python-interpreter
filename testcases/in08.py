@@ -1,23 +1,20 @@
-thresholdValue = 20
+# TestCase for:if-else with <=
 
-def calculateDiscount(price):
-    if price > 100:
-        if price > 200:
-            if price > 300:
-                discountedPrice = thresholdValue - 10
-            else:
-                discountedPrice = price / 2  # Target condition
-        else:
-            discountedPrice = price * 2
-    else:
-        if price < 50:
-            discountedPrice = thresholdValue / 2
-        else:
-            discountedPrice = thresholdValue + price
-    return discountedPrice
+x = 5
+y = 2
+a = x + y
 
-originalPrice = 250
-finalPrice = calculateDiscount(originalPrice)
-print("OriginalPrice=", originalPrice)
-print("FinalPrice =", finalPrice)
+# if-else condition
+if a <= 3:
+    resA = 1
+else:
+    resA = 0 
 
+resB = 5
+b = y + y
+
+if b == 4:
+    resB = 1
+
+print("resA =", resA)
+print("resB =", resB)

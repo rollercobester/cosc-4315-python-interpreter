@@ -1,15 +1,9 @@
-# TestCase 3:if-else
+#test cases for multiplciation with values
 
-x = 5
+# Perform operations
+a = 3 * 4 * 10 * 1 * 2
+b = 10 * 20 * 1 * 2 * 3
 
-resultComparison = x - 2  # 3
-
-# if-else condition
-if resultComparison > 2:
-    resultIf = resultComparison + 2  #5
-else:
-    resultIf = resultComparison - 2  
-
-print("ResultComparison =", resultComparison)
-print("ResultIf =", resultIf)
-
+# Print results
+print("a =", a)
+print("b =", b)

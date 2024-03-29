@@ -1,24 +1,19 @@
-#Function with nested if/else 
+# TestCase for: 2 if ==
 
-globalValue = 10
+x1 = 5
+y1 = x1 + 3 + 7
+z1 = x1 * 2 + y1 
 
-def evaluate(x):
-    localValue = x
-    if localValue > 5:
-        # Nested condition
-        if localValue < 10:
-            result = localValue + globalValue 
-        else:
-            result = localValue - 2
-    else:
-        if localValue == 5:
-            result = localValue * globalValue 
-        else:
-            result = globalValue / localValue 
-    return result
 
-testValue = 12
-resultFromFunction = evaluate(testValue)
+# if condition
+resA = 0
+resB = 0
+if y1  == 15:
+    resA = 1 
 
-print("ResultFromFunction =", resultFromFunction)
 
+if z1 == 4:
+    resB = 1
+
+print("resA =", resA)
+print("resB =", resB)

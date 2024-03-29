@@ -1,1 +1,2 @@
-ResultFromFunction = 10
+resA = 1
+resB = 0

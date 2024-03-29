@@ -1,1 +1,3 @@
-Final Result = 93
+resA = 0
+resB = 16
+resC = 11

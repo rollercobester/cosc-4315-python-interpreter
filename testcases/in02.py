@@ -1,10 +1,12 @@
-# Test Case 2: Multiplication and Division
+##Basic Arithmetic and Comments
 
-resultProduct = 8 * 5  #40
 
-resultQuotient = 20 / 3  #6
+a = 3
+b = 2
+c = 20
+d = 50
+# Perform addition
+resultSum = a + b + c + d
 
-#print
-print("Product = ", resultProduct)
-print("Quotient = ", resultQuotient)
-
+# print result
+print("Sum =", resultSum)

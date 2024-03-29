@@ -1,16 +1,13 @@
-#5: Double Nested if-else Condition
+# Test Case for: Multiplication with variables
 
-z = 20
+a = 10
+b = 2
+c = 3
 
-if z > 10:
-    if z > 30:
-        resultDoubleNested = z - 10
-    else:
-        if z > 15:
-            resultDoubleNested = z + 10  #30
-        else:
-            resultDoubleNested = z * 2
-else:
-    resultDoubleNested = z / 2
+resA = b * c + b * a + a * c
 
-print("ResultDoubleNested =", resultDoubleNested)
+resB = a + b + c + a * b * c
+
+#print
+print("resA =", resA)
+print("resB =", resB)

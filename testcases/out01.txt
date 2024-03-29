@@ -1,2 +1,2 @@
-Sum =  10
-Difference =  6
+a = 1
+b = 2

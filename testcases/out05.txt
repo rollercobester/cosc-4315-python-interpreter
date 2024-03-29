@@ -1,1 +1,2 @@
-ResultDoubleNested = 30
+resA = 56
+resB = 75

@@ -1,2 +1,2 @@
-OriginalPrice= 250
-FinalPrice = 125
+resA = 0
+resB = 1
