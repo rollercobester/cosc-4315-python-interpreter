@@ -21,7 +21,7 @@ struct Token {
         COMMA, DOT, SEMICOLON, COLON, L_PAREN, R_PAREN, END_LINE, EOF_TOKEN,
 
         // variables
-        INT, ID,
+        INT, ID, INDENT,
 
         // keywords
         DEF, IF, ELIF, ELSE, RETURN, NOT

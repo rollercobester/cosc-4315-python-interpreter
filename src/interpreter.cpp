@@ -105,7 +105,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 3\na = a + a * a\njohn = 35\nhubert = 3 * 5");
+    Scanner scanner("a = 3\"\"\"test\"\"\"\na = a + a * a\njohn = 35\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();

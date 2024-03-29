@@ -12,11 +12,11 @@ class Scanner {
 
   private:
     string text;
-    size_t pos;
+    int pos;
     char current_char;
 
   public:
-    Scanner(string input) : text(input), pos(0), current_char(text[pos]) {}
+    Scanner(string input) : text('\n' + input), pos(0), current_char(text[pos]) {}
 
     void error() {
         throw runtime_error("Invalid character");
@@ -32,16 +32,54 @@ class Scanner {
         }
     }
 
-    char peek() {
-        if (pos >= text.length() - 1) {
+    char peek(int n = 1) {
+        if (pos + n >= text.length()) {
             return '\0';
         } else {
-            return text[pos + 1];
+            return text[pos + n];
         }
+    }
+
+    char peek_behind(int n = 1) {
+        if (pos - n < 0) {
+            return '\0';
+        } else {
+            return text[pos - n];
+        }
+    }
+
+    Token skip_indent() {
+        int indent = 0;
+        while (current_char == ' ') {
+            advance();
+            indent++;
+        }
+        return Token(Token::INDENT, to_string(indent));
     }
 
     void skip_whitespace() {
         while (current_char != '\0' && current_char == ' ') {
+            advance();
+        }
+    }
+
+    void skip_comment() {
+        while (current_char != '\0' && current_char != '\n') {
+            advance();
+        }
+    }
+
+    void skip_multiline_comment() {
+        advance();
+        advance();
+        advance();
+        while (current_char != '\0') {
+            if (current_char == '\"' && peek() == '\"' && peek(2) == '\"') {
+                advance();
+                advance();
+                advance();
+                break;
+            }
             advance();
         }
     }
@@ -70,8 +108,20 @@ class Scanner {
 
     Token get_next_token() {
         while (current_char != '\0') {
+            /*if (pos == 0) {
+                advance();
+                continue;
+            } else if (peek_behind() == '\n') {
+                return skip_indent();
+            } else */
             if (current_char == ' ') {
                 skip_whitespace();
+                continue;
+            } else if (current_char == '"' && peek() == '"' && peek(2) == '"') {
+                skip_multiline_comment();
+                continue;
+            } else if (current_char == '#') {
+                skip_comment();
                 continue;
             } else if (isdigit(current_char)) {
                 return integer();

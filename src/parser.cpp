@@ -2,6 +2,7 @@
 #define PARSER_CPP
 
 #include <iostream>
+#include <stack>
 #include <stdexcept>
 #include "ast.cpp"
 #include "scanner.cpp"
@@ -12,9 +13,13 @@ class Parser {
   private:
     Scanner scanner;
     Token current_token;
+    stack<int> indent_level;
+
 
   public:
-    Parser(Scanner &_) : scanner(_), current_token(scanner.get_next_token()) {}
+    Parser(Scanner &_) : scanner(_), current_token(scanner.get_next_token()) {
+        indent_level.push(0);
+    }
 
     void error() {
         throw runtime_error("Invalid syntax");
@@ -27,6 +32,18 @@ class Parser {
         } else {
             error();
         }
+    }
+
+    void parse_indent() {
+        if (current_token.type == Token::INDENT) {
+            int prev_indent = indent_level.top();
+            int indent = stoi(current_token.value);
+            if (indent == prev_indent) {
+                eat(Token::INDENT);
+                return;
+            }
+        }
+        error();
     }
 
     AST* factor() {
@@ -87,6 +104,7 @@ class Parser {
     }
 
     AST* statement() {
+        //parse_indent();
         AST* node;
         if (current_token.type == Token::DEF) {
             node = compound_statement();
