@@ -48,18 +48,21 @@ class Parser {
 
     AST* factor() {
         Token token = current_token;
-        if (token.type == Token::PLUS) {
+        if (token.type == Token::EXCLAMATION || token.type == Token::NOT) {
+            eat(token.type);
+            return new UnaryOpNode(token, expr());
+        } else if (token.type == Token::PLUS) {
             eat(Token::PLUS);
-            return new UnaryOp(token, factor());
+            return new UnaryOpNode(token, factor());
         } else if (token.type == Token::MINUS) {
             eat(Token::MINUS);
-            return new UnaryOp(token, factor());
+            return new UnaryOpNode(token, factor());
         } else if (token.type == Token::BOOL) {
             eat(Token::BOOL);
-            return new Bool(token);
+            return new BoolNode(token);
         } else if (token.type == Token::INT) {
             eat(Token::INT);
-            return new Num(token);
+            return new IntNode(token);
         } else if (token.type == Token::L_PAREN) {
             eat(Token::L_PAREN);
             AST* node = expr();
@@ -67,9 +70,7 @@ class Parser {
             return node;
         } else {
             eat(Token::ID);
-            return new Variable(token);
-            //error();
-            //return nullptr;
+            return new VariableNode(token);
         }
     }
 
@@ -78,7 +79,7 @@ class Parser {
         while (current_token.type == Token::TIMES || current_token.type == Token::DIVIDE) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            node = new BinOp(node, operator_token, factor());
+            node = new BinOpNode(node, operator_token, factor());
         }
         return node;
     }
@@ -88,13 +89,23 @@ class Parser {
         while (current_token.type == Token::PLUS || current_token.type == Token::MINUS) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            node = new BinOp(node, operator_token, term());
+            node = new BinOpNode(node, operator_token, term());
+        }
+        return node;
+    }
+
+    AST* bool_expr() {
+        AST* node = expr();
+        while (current_token.type == Token::EQUALS || current_token.type == Token::NOT_EQUALS) {
+            Token operator_token = current_token;
+            eat(operator_token.type);
+            node = new BinOpNode(node, operator_token, expr());
         }
         return node;
     }
 
     AST* compound_statement() {
-        Compound* root = new Compound();
+        CompoundNode* root = new CompoundNode();
         root->children.push_back(statement());
         while (current_token.type == Token::END_LINE) {
             eat(Token::END_LINE);
@@ -104,6 +115,23 @@ class Parser {
             error();
         }
         return root;
+    }
+
+    AST* else_statement() {
+        eat(Token::ELSE);
+        eat(Token::COLON);
+        eat(Token::END_LINE);
+        return compound_statement();
+    }
+
+    AST* if_statement() {
+        AST* condition = bool_expr();
+        eat(Token::IF);
+        eat(Token::COLON);
+        eat(Token::END_LINE);
+        AST* if_body = compound_statement();
+        AST* else_body = else_statement();
+        return new ConditionalNode(condition, if_body, else_body);
     }
 
     AST* statement() {
@@ -120,15 +148,15 @@ class Parser {
     }
 
     AST* assignment_statement() {
-        Variable* left = variable();
+        VariableNode* left = variable();
         Token token = current_token;
         eat(Token::ASSIGN);
-        AST* right = expr();
-        return new Assign(left, token, right);
+        AST* right = bool_expr();
+        return new AssignNode(left, token, right);
     }
 
-    Variable* variable() {
-        Variable* node = new Variable(current_token);
+    VariableNode* variable() {
+        VariableNode* node = new VariableNode(current_token);
         eat(Token::ID);
         return node;
     }

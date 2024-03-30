@@ -24,7 +24,7 @@ struct Token {
         BOOL, INT, ID, INDENT,
 
         // keywords
-        DEF, IF, ELIF, ELSE, RETURN, NOT
+        DEF, IF, ELIF, ELSE, RETURN, NOT, OR, AND
     };
     TokenType type;
     string value;
@@ -35,13 +35,16 @@ struct Token {
 };
 
 const unordered_map<string, Token::TokenType> keywords = {
-    {"def", Token::DEF},
-    {"if", Token::TokenType::IF},
-    {"elif", Token::TokenType::ELIF},
-    {"else", Token::TokenType::ELSE},
-    {"return", Token::TokenType::RETURN},
-    {"True", Token::TokenType::BOOL},
-    {"False", Token::TokenType::BOOL}
+    {"def",    Token::DEF},
+    {"if",     Token::IF},
+    {"elif",   Token::ELIF},
+    {"else",   Token::ELSE},
+    {"return", Token::RETURN},
+    {"not",    Token::NOT},
+    {"or",     Token::OR},
+    {"and",    Token::AND},
+    {"True",   Token::BOOL},
+    {"False",  Token::BOOL},
 };
 
 #endif

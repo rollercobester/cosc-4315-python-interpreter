@@ -9,60 +9,73 @@ class AST {
     virtual ~AST() {}
 };
 
-class UnaryOp : public AST {
+class ConditionalNode : public AST {
+  public:
+    AST* condition;
+    AST* if_body;
+    AST* else_body;
+
+    ConditionalNode(AST* condition, AST* if_body, AST* else_body) {
+      this->condition = condition;
+      this->if_body = if_body;
+      this->else_body = else_body;
+    }
+};
+
+class UnaryOpNode : public AST {
   public:
     Token op;
     AST* expr;
 
-    UnaryOp(Token op, AST* expr) : op(op), expr(expr) {}
+    UnaryOpNode(Token op, AST* expr) : op(op), expr(expr) {}
 };
 
-class BinOp : public AST {
+class BinOpNode : public AST {
   public:
     AST* left;
     Token op;
     AST* right;
 
-    BinOp(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
+    BinOpNode(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
-class Bool : public AST {
+class BoolNode : public AST {
   public:
     Token token;
     bool value;
 
-    Bool(Token token) : token(token), value(token.value == "True") {}
+    BoolNode(Token token) : token(token), value(token.value == "True") {}
 };
 
-class Num : public AST {
+class IntNode : public AST {
   public:
     Token token;
     int value;
 
-    Num(Token token) : token(token), value(stoi(token.value)) {}
+    IntNode(Token token) : token(token), value(stoi(token.value)) {}
 };
 
-class Compound : public AST {
+class CompoundNode : public AST {
   public:
     vector<AST*> children;
-    Compound() {}
+    CompoundNode() {}
 };
 
-class Variable : public AST {
+class VariableNode : public AST {
   public:
     Token token;
     string value;
 
-    Variable(Token token) : token(token), value(token.value) {}
+    VariableNode(Token token) : token(token), value(token.value) {}
 };
 
-class Assign : public AST {
+class AssignNode : public AST {
   public:
-    Variable* left;
+    VariableNode* left;
     Token op;
     AST* right;
 
-    Assign(Variable* left, Token op, AST* right) : left(left), op(op), right(right) {}
+    AssignNode(VariableNode* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
 
