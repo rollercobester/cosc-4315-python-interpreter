@@ -109,7 +109,6 @@ class Scanner {
 
     Token get_next_token() {
         while (current_char != '\0') {
-            cout << current_char << endl;
             if (next_token_is_indent) {
                 next_token_is_indent = false;
                 return skip_indent();

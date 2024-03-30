@@ -14,6 +14,7 @@ class Parser {
     Scanner scanner;
     Token current_token;
     stack<int> indent_level;
+    int debug_depth = 0;
 
 
   public:
@@ -34,9 +35,7 @@ class Parser {
     }
 
     void parse_indent() {
-        cout << "$14" << endl;
         if (current_token.type == Token::INDENT) {
-            //int prev_indent = indent_level.top();
             int indent = stoi(current_token.value);
             while (indent < indent_level.top()) {
                 indent_level.pop();
@@ -45,93 +44,88 @@ class Parser {
                 eat(Token::INDENT);
                 return;
             }
-            /*while (indent < indent_level.top()) {
-                indent_level.pop();
-            }
-            if (indent == indent_level.top()) return;*/
         }
         error();
     }
 
     AST* factor() {
-        cout << "$5" << endl;
+        debugPrint("<factor>");
         Token token = current_token;
+        AST* node;
         if (token.type == Token::EXCLAMATION || token.type == Token::NOT) {
             eat(token.type);
-            return new UnaryOpNode(token, expr());
+            node = new UnaryOpNode(token, expr());
         } else if (token.type == Token::PLUS) {
             eat(Token::PLUS);
-            return new UnaryOpNode(token, factor());
+            node = new UnaryOpNode(token, factor());
         } else if (token.type == Token::MINUS) {
             eat(Token::MINUS);
-            return new UnaryOpNode(token, factor());
+            node = new UnaryOpNode(token, factor());
         } else if (token.type == Token::BOOL) {
             eat(Token::BOOL);
-            return new BoolNode(token);
+            node = new BoolNode(token);
         } else if (token.type == Token::INT) {
-            cout << "$5.2" << endl;
             eat(Token::INT);
-            cout << "$5.3" << endl;
-            return new IntNode(token);
+            node = new IntNode(token);
         } else if (token.type == Token::L_PAREN) {
             eat(Token::L_PAREN);
-            AST* node = expr();
+            node = expr();
             eat(Token::R_PAREN);
-            return node;
         } else {
-            cout << "$5.1" << endl;
             eat(Token::ID);
-            return new VariableNode(token);
+            node = new VariableNode(token);
         }
+        debugPrint("</factor>");
+        return node;
     }
 
     AST* term() {
-        cout << "$4" << endl;
+        debugPrint("<term>");
         AST* node = factor();
-        cout << "$6" << endl;
         while (current_token.type == Token::TIMES || current_token.type == Token::DIVIDE) {
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOpNode(node, operator_token, factor());
         }
+        debugPrint("</term>");
         return node;
     }
 
     AST* expr() {
-        cout << "$3" << endl;
+        debugPrint("<expr>");
         AST* node = term();
-        cout << "$7" << endl;
         while (current_token.type == Token::PLUS || current_token.type == Token::MINUS) {
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOpNode(node, operator_token, term());
         }
+        debugPrint("</expr>");
         return node;
     }
 
     AST* bool_expr() {
-        cout << "$2" << endl;
+        debugPrint("<bool_expr>");
         AST* node = expr();
         //AST* node = bool_expr();?
-        cout << "$8" << endl;
         while (current_token.type == Token::EQUALS
             || current_token.type == Token::NOT_EQUALS
             || current_token.type == Token::LESS_THAN
             || current_token.type == Token::GREATER_THAN 
             || current_token.type == Token::LESS_THAN_EQUALS
             || current_token.type == Token::GREATER_THAN_EQUALS) {
-            cout << "$8.1" << endl;
+            
             Token operator_token = current_token;
             eat(operator_token.type);
             //node = new BinOpNode(node, operator_token, bool_expr());?
             node = new BinOpNode(node, operator_token, expr());
         }
+        debugPrint("</bool_expr>");
         return node;
     }
 
     AST* compound_statement() {
+        debugPrint("<block>");
         CompoundNode* root = new CompoundNode();
-        cout << "$11" << endl;
         root->children.push_back(statement());
         while (current_token.type == Token::END_LINE) {
             eat(Token::END_LINE);
@@ -140,74 +134,96 @@ class Parser {
         if (current_token.type == Token::ID) {
             error();
         }
+        debugPrint("</block>");
         return root;
     }
 
     AST* else_statement() {
+        debugPrint("<else>");
+        AST* node;
         if (current_token.type == Token::ELSE) {
             eat(Token::ELSE);
             eat(Token::COLON);
             eat(Token::END_LINE);
-            return compound_statement();
+            node = compound_statement();
         } else {
-            return empty();
+            node = empty();
         }
+        debugPrint("</else>");
+        return node;
     }
 
     AST* if_statement() {
-        cout << "$1" << endl;
+        debugPrint("<if>");
         eat(Token::IF);
         AST* condition = bool_expr();
-        cout << "$9" << endl;
         eat(Token::COLON);
         eat(Token::END_LINE);
         int next_line_indent = stoi(current_token.value);
-        cout << "$9.1 " << next_line_indent << " " << indent_level.top() << endl; 
         if (next_line_indent <= indent_level.top())
             error();
         else indent_level.push(next_line_indent);
-        cout << "$10" << endl;
         AST* if_body = compound_statement();
         AST* else_body = else_statement();
+        debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
     }
 
     AST* statement() {
-        cout << "$12" << endl;
         parse_indent();
-        cout << "$13" << endl;
+        debugPrint("<line>");
+        AST* node;
         if (current_token.type == Token::IF)
-            return if_statement();
+            node = if_statement();
         if (current_token.type == Token::ID)
-            return  assignment_statement();
-        return  empty();
+            node = assignment_statement();
+        debugPrint("</line>");
+        if (node != nullptr) return node;
+        else return empty();
     }
 
     AST* assignment_statement() {
+        debugPrint("<assign>");
         VariableNode* left = variable();
         Token token = current_token;
         eat(Token::ASSIGN);
         AST* right = bool_expr();
+        debugPrint("</assign>");
         return new AssignNode(left, token, right);
     }
 
     VariableNode* variable() {
+        debugPrint("<var>");
         VariableNode* node = new VariableNode(current_token);
         eat(Token::ID);
+        debugPrint("</var>");
         return node;
     }
 
     AST* empty() {
+        debugPrint("<empty>");
         AST* node = new NoOp();
+        debugPrint("</empty>");
         return node;
     }
 
     AST* parse() {
+        debugPrint("<parse>");
         AST* node = compound_statement();
         if (current_token.type != Token::EOF_TOKEN) {
             error();
         }
+        debugPrint("</parse>");
         return node;
+    }
+
+    void debugPrint(string text) {
+        if (text[1] == '/') debug_depth--;
+        for (int i = 0; i < debug_depth; i++) {
+            cout << ' ';
+        }
+        if (text[1] != '/') debug_depth++;
+        cout << text << endl;
     }
 };
 
