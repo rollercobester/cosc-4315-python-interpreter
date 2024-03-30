@@ -96,7 +96,13 @@ class Parser {
 
     AST* bool_expr() {
         AST* node = expr();
-        while (current_token.type == Token::EQUALS || current_token.type == Token::NOT_EQUALS) {
+        while (current_token.type == Token::EQUALS
+            || current_token.type == Token::NOT_EQUALS
+            || current_token.type == Token::LESS_THAN
+            || current_token.type == Token::GREATER_THAN 
+            || current_token.type == Token::LESS_THAN_EQUALS
+            || current_token.type == Token::GREATER_THAN_EQUALS) {
+                
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOpNode(node, operator_token, expr());
