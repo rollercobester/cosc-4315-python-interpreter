@@ -126,8 +126,8 @@ class Parser {
     AST* block() {
         debugPrint("<block>");
         BlockNode* root = new BlockNode();
-        int current_indent = indent_level.top();
         root->children.push_back(statement());
+        int current_indent = indent_level.top();
         while (indent_level.top() == current_indent && current_token.type == Token::END_LINE) {
             eat(Token::END_LINE);
             root->children.push_back(statement());
