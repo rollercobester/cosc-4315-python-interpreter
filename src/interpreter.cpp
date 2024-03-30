@@ -157,7 +157,7 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 3\"\"\"test\"\"\"\na = a + a * a\nc = 3==1+2\nc= !c\nhubert = 3 * 5");
+    Scanner scanner("a = 2\nif a == 2:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5");
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();

@@ -13,14 +13,14 @@ class Scanner {
   private:
     string text;
     int pos;
+    bool next_token_is_indent = true;
     char current_char;
 
   public:
-    Scanner(string input) : text('\n' + input), pos(0), current_char(text[pos]) {}
+    Scanner(string input) : text(input), pos(0), current_char(text[pos]) {}
 
     void error() {
         throw runtime_error("Invalid character");
-        //exit(1);
     }
 
     void advance() {
@@ -54,6 +54,7 @@ class Scanner {
             advance();
             indent++;
         }
+        //cout << indent <cout< endl;
         return Token(Token::INDENT, to_string(indent));
     }
 
@@ -108,13 +109,15 @@ class Scanner {
 
     Token get_next_token() {
         while (current_char != '\0') {
-            /*if (pos == 0) {
-                advance();
-                continue;
-            } else if (peek_behind() == '\n') {
+            cout << current_char << endl;
+            if (next_token_is_indent) {
+                next_token_is_indent = false;
                 return skip_indent();
-            } else */
-            if (current_char == ' ') {
+            } else if (current_char == '\n') {
+                next_token_is_indent = true;
+                advance();
+                return Token(Token::END_LINE, "\n");
+            } else if (current_char == ' ') {
                 skip_whitespace();
                 continue;
             } else if (current_char == '"' && peek() == '"' && peek(2) == '"') {
@@ -189,9 +192,9 @@ class Scanner {
             } else if (current_char == ')') {
                 advance();
                 return Token(Token::R_PAREN, ")");
-            } else if (current_char == '\n') {
+            } else if (current_char == ':') {
                 advance();
-                return Token(Token::END_LINE, "\n");
+                return Token(Token::COLON, ":");
             }
             error();
         }
