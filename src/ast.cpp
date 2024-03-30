@@ -55,10 +55,10 @@ class IntNode : public AST {
     IntNode(Token token) : token(token), value(stoi(token.value)) {}
 };
 
-class CompoundNode : public AST {
+class BlockNode : public AST {
   public:
     vector<AST*> children;
-    CompoundNode() {}
+    BlockNode() {}
 };
 
 class VariableNode : public AST {

@@ -54,7 +54,7 @@ class Parser {
         AST* node;
         if (token.type == Token::EXCLAMATION || token.type == Token::NOT) {
             eat(token.type);
-            node = new UnaryOpNode(token, expr());
+            node = new UnaryOpNode(token, math_expr());
         } else if (token.type == Token::PLUS) {
             eat(Token::PLUS);
             node = new UnaryOpNode(token, factor());
@@ -69,7 +69,7 @@ class Parser {
             node = new IntNode(token);
         } else if (token.type == Token::L_PAREN) {
             eat(Token::L_PAREN);
-            node = expr();
+            node = math_expr();
             eat(Token::R_PAREN);
         } else {
             eat(Token::ID);
@@ -91,22 +91,22 @@ class Parser {
         return node;
     }
 
-    AST* expr() {
-        debugPrint("<expr>");
+    AST* math_expr() {
+        debugPrint("<math_expr>");
         AST* node = term();
         while (current_token.type == Token::PLUS || current_token.type == Token::MINUS) {
             Token operator_token = current_token;
             eat(operator_token.type);
             node = new BinOpNode(node, operator_token, term());
         }
-        debugPrint("</expr>");
+        debugPrint("</math_expr>");
         return node;
     }
 
-    AST* bool_expr() {
-        debugPrint("<bool_expr>");
-        AST* node = expr();
-        //AST* node = bool_expr();?
+    AST* expr() {
+        debugPrint("<expr>");
+        AST* node = math_expr();
+        //AST* node = expr();?
         while (current_token.type == Token::EQUALS
             || current_token.type == Token::NOT_EQUALS
             || current_token.type == Token::LESS_THAN
@@ -116,18 +116,19 @@ class Parser {
             
             Token operator_token = current_token;
             eat(operator_token.type);
-            //node = new BinOpNode(node, operator_token, bool_expr());?
-            node = new BinOpNode(node, operator_token, expr());
+            //node = new BinOpNode(node, operator_token, expr());?
+            node = new BinOpNode(node, operator_token, math_expr());
         }
-        debugPrint("</bool_expr>");
+        debugPrint("</expr>");
         return node;
     }
 
-    AST* compound_statement() {
+    AST* block() {
         debugPrint("<block>");
-        CompoundNode* root = new CompoundNode();
+        BlockNode* root = new BlockNode();
+        int current_indent = indent_level.top();
         root->children.push_back(statement());
-        while (current_token.type == Token::END_LINE) {
+        while (indent_level.top() == current_indent && current_token.type == Token::END_LINE) {
             eat(Token::END_LINE);
             root->children.push_back(statement());
         }
@@ -145,7 +146,7 @@ class Parser {
             eat(Token::ELSE);
             eat(Token::COLON);
             eat(Token::END_LINE);
-            node = compound_statement();
+            node = block();
         } else {
             node = empty();
         }
@@ -156,14 +157,14 @@ class Parser {
     AST* if_statement() {
         debugPrint("<if>");
         eat(Token::IF);
-        AST* condition = bool_expr();
+        AST* condition = expr();
         eat(Token::COLON);
         eat(Token::END_LINE);
         int next_line_indent = stoi(current_token.value);
         if (next_line_indent <= indent_level.top())
             error();
         else indent_level.push(next_line_indent);
-        AST* if_body = compound_statement();
+        AST* if_body = block();
         AST* else_body = else_statement();
         debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
@@ -171,13 +172,13 @@ class Parser {
 
     AST* statement() {
         parse_indent();
-        debugPrint("<line>");
+        debugPrint("<statement>");
         AST* node;
         if (current_token.type == Token::IF)
             node = if_statement();
         if (current_token.type == Token::ID)
             node = assignment_statement();
-        debugPrint("</line>");
+        debugPrint("</statement>");
         if (node != nullptr) return node;
         else return empty();
     }
@@ -187,7 +188,7 @@ class Parser {
         VariableNode* left = variable();
         Token token = current_token;
         eat(Token::ASSIGN);
-        AST* right = bool_expr();
+        AST* right = expr();
         debugPrint("</assign>");
         return new AssignNode(left, token, right);
     }
@@ -207,20 +208,20 @@ class Parser {
         return node;
     }
 
-    AST* parse() {
-        debugPrint("<parse>");
-        AST* node = compound_statement();
+    AST* program() {
+        debugPrint("<program>");
+        AST* node = block();
         if (current_token.type != Token::EOF_TOKEN) {
             error();
         }
-        debugPrint("</parse>");
+        debugPrint("</program>");
         return node;
     }
 
     void debugPrint(string text) {
         if (text[1] == '/') debug_depth--;
         for (int i = 0; i < debug_depth; i++) {
-            cout << ' ';
+            cout << " ";
         }
         if (text[1] != '/') debug_depth++;
         cout << text << endl;

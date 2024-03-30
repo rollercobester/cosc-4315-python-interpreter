@@ -91,7 +91,7 @@ class Interpreter {
         else throw runtime_error("Invalid operand type");
     }
 
-    void visit_Compound(CompoundNode* node) {
+    void visit_Block(BlockNode* node) {
         for (AST* child : node->children) {
             visit(child);
         }
@@ -126,8 +126,8 @@ class Interpreter {
             return visit_Num(dynamic_cast<IntNode*>(node));
         } else if (dynamic_cast<UnaryOpNode*>(node)) {
             return visit_UnaryOp(dynamic_cast<UnaryOpNode*>(node));
-        } else if (dynamic_cast<CompoundNode*>(node)) {
-            visit_Compound(dynamic_cast<CompoundNode*>(node));
+        } else if (dynamic_cast<BlockNode*>(node)) {
+            visit_Block(dynamic_cast<BlockNode*>(node));
         } else if (dynamic_cast<NoOp*>(node)) {
             visit_NoOp(dynamic_cast<NoOp*>(node));
         } else if (dynamic_cast<AssignNode*>(node)) {
@@ -141,7 +141,7 @@ class Interpreter {
     }
 
     int interpret() {
-        AST* tree = parser.parse();
+        AST* tree = parser.program();
         visit(tree);
         for (const auto& pair : GLOBAL_SCOPE) {
             if (dynamic_cast<VarBool*>(pair.second)) {
@@ -157,7 +157,9 @@ class Interpreter {
 #endif
 
 int main() {
-    Scanner scanner("a = 2\nif a == 2:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5");
+    string x = "a = 2\nif a == 2:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5";
+    cout << x << endl;
+    Scanner scanner(x);
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();
