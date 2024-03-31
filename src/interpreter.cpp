@@ -8,6 +8,7 @@
 #include "scanner.cpp"
 #include "token.cpp"
 #include "var.cpp"
+#include <fstream>
 
 using namespace std;
 
@@ -164,15 +165,42 @@ class Interpreter {
     }
 };
 
+string readFileIntoString(const string& filePath) {
+    ifstream file(filePath);
+    if (!file.is_open()) {
+        cerr << "Error: Unable to open file " << filePath << endl;
+        return "";
+    }
+
+    string content;
+    string line;
+    while (getline(file, line)) {
+        content += line + "\n";
+    }
+
+    file.close();
+    return content;
+    
+}
+
 #endif
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        cerr << "Usage: " << argv[0] << " <file_path>" << endl;
+        return 1;
+    }
+
+    string filePath = argv[1];
+    string fileContent = readFileIntoString(filePath);
+
+
     string text= "a = 2\nif a == 4 or a == 3:\n a = 3\nelse:\n c = 3!=1+2\nd=4\nhubert = 3 * 5";
     cout << "Evaluating file:" << endl << endl;
     cout << "-------------------------------" << endl;
-    cout << text << endl;
+    cout << fileContent << endl;
     cout << "-------------------------------" << endl << endl;
-    Scanner scanner(text);
+    Scanner scanner(fileContent);
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();
