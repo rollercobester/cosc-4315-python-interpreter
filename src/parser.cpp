@@ -201,9 +201,10 @@ class Parser {
             node = if_statement();
         else if (current_token.type == Token::ID)
             node = assignment_statement();
+        else if (current_token.type == Token::END_LINE)
+            node = empty();
         debugPrint("</statement>");
-        if (node != nullptr) return node;
-        else return empty();
+        return node;
     }
 
     AST* assignment_statement() {
