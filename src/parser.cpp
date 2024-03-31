@@ -56,7 +56,7 @@ class Parser {
         debugPrint("<factor>");
         Token token = current_token;
         AST* node;
-        if (token.type == Token::EXCLAMATION || token.type == Token::NOT) {
+        if (token.type == Token::EXCLAMATION) {
             eat(token.type);
             node = new UnaryOpNode(token, math_expr());
         } else if (token.type == Token::PLUS) {
@@ -127,6 +127,25 @@ class Parser {
         return node;
     }
 
+    AST* logic_expr() {
+        debugPrint("<logic_expr>");
+        AST* node = expr();
+        //AST* node = expr();?
+        while (current_token.type == Token::NOT
+            || current_token.type == Token::AND 
+            || current_token.type == Token::OR) {
+            
+            Token operator_token = current_token;
+            eat(operator_token.type);
+            if (current_token.type == Token::NOT)
+                node = new UnaryOpNode(operator_token, node);
+            else
+                node = new BinOpNode(node, operator_token, expr());
+        }
+        debugPrint("</logic_expr>");
+        return node;
+    }
+
     AST* block() {
         debugPrint("<block>");
         
@@ -152,14 +171,10 @@ class Parser {
     AST* else_statement() {
         debugPrint("<else>");
         AST* node;
-        if (current_token.type == Token::ELSE) {
-            eat(Token::ELSE);
-            eat(Token::COLON);
-            eat(Token::END_LINE);
-            node = block();
-        } else {
-            node = empty();
-        }
+        eat(Token::ELSE);
+        eat(Token::COLON);
+        eat(Token::END_LINE);
+        node = block();
         debugPrint("</else>");
         return node;
     }
@@ -167,12 +182,14 @@ class Parser {
     AST* if_statement() {
         debugPrint("<if>");
         eat(Token::IF);
-        AST* condition = expr();
+        AST* condition = logic_expr();
         eat(Token::COLON);
         eat(Token::END_LINE);
         AST* if_body = block();
-        //AST* else_body = else_statement();
-        NoOp* else_body = new NoOp();
+        parse_indent();
+        eat(Token::INDENT);
+        AST* else_body = else_statement();
+        //NoOp* else_body = new NoOp();
         debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
     }
@@ -194,7 +211,7 @@ class Parser {
         VariableNode* left = variable();
         Token token = current_token;
         eat(Token::ASSIGN);
-        AST* right = expr();
+        AST* right = logic_expr();
         debugPrint("</assign>");
         return new AssignNode(left, token, right);
     }

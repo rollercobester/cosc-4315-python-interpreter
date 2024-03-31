@@ -32,9 +32,11 @@ class Interpreter {
     Var* compute_BoolBinOp(Var* left, Token op, Var* right) {
         bool val1 = dynamic_cast<VarBool*>(left)->value;
         bool val2 = dynamic_cast<VarBool*>(right)->value;
-        if (op.type == Token::EQUALS)              return new VarBool(val1 == val2);
-        if (op.type == Token::NOT_EQUALS)          return new VarBool(val1 != val2);
-        else throw runtime_error("Invalid operation");
+        if (op.type == Token::OR)         return new VarBool(val1 || val2);
+        if (op.type == Token::AND)        return new VarBool(val1 && val2);
+        if (op.type == Token::EQUALS)     return new VarBool(val1 == val2);
+        if (op.type == Token::NOT_EQUALS) return new VarBool(val1 != val2);
+        throw runtime_error("Invalid operation");
     }
 
     /* Handles two-operand numeric operations */
@@ -51,7 +53,7 @@ class Interpreter {
         if (op.type == Token::GREATER_THAN)        return new VarBool(val1 >  val2);
         if (op.type == Token::LESS_THAN_EQUALS)    return new VarBool(val1 <= val2);
         if (op.type == Token::GREATER_THAN_EQUALS) return new VarBool(val1 >= val2);
-        else throw runtime_error("Invalid operation");
+        throw runtime_error("Invalid operation");
     }
 
     /* Handles two-operand operations */
@@ -68,8 +70,8 @@ class Interpreter {
     /* Handles one-operand boolean operations */
     VarBool* compute_BoolUnOp(Var* value, Token op) {
         bool val = dynamic_cast<VarBool*>(value)->value;
-        if (op.type == Token::NOT || op.type == Token::EXCLAMATION)
-            return new VarBool(!val);
+        if (op.type == Token::NOT)         return new VarBool(!val);
+        if (op.type == Token::EXCLAMATION) return new VarBool(!val);
         else throw runtime_error("Invalid operation");
     }
 
@@ -165,7 +167,7 @@ class Interpreter {
 #endif
 
 int main() {
-    string text= "a = 2\nif a == 3:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5";
+    string text= "a = 2\nif a == 4 or a == 3:\n a = 3\nelse:\n c = 3!=1+2\nd=4\nhubert = 3 * 5";
     cout << "Evaluating file:" << endl << endl;
     cout << "-------------------------------" << endl;
     cout << text << endl;
