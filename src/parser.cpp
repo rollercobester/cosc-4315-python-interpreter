@@ -188,7 +188,11 @@ class Parser {
         AST* if_body = block();
         parse_indent();
         eat(Token::INDENT);
-        AST* else_body = else_statement();
+        AST* else_body;
+        if (current_token.type == Token::ELSE)
+            else_body = else_statement();
+        else
+            else_body = new NoOp();
         //NoOp* else_body = new NoOp();
         debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
