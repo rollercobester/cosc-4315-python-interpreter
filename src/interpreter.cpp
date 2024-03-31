@@ -117,26 +117,34 @@ class Interpreter {
         }
     }
 
-    Var* visit(AST* node) {
-        if (dynamic_cast<BinOpNode*>(node)) {
-            return visit_BinOp(dynamic_cast<BinOpNode*>(node));
-        } else if (dynamic_cast<BoolNode*>(node)) {
-            return visit_Bool(dynamic_cast<BoolNode*>(node));
-        } else if (dynamic_cast<IntNode*>(node)) {
-            return visit_Num(dynamic_cast<IntNode*>(node));
-        } else if (dynamic_cast<UnaryOpNode*>(node)) {
-            return visit_UnaryOp(dynamic_cast<UnaryOpNode*>(node));
-        } else if (dynamic_cast<BlockNode*>(node)) {
-            visit_Block(dynamic_cast<BlockNode*>(node));
-        } else if (dynamic_cast<NoOp*>(node)) {
-            visit_NoOp(dynamic_cast<NoOp*>(node));
-        } else if (dynamic_cast<AssignNode*>(node)) {
-            visit_Assign(dynamic_cast<AssignNode*>(node));
-        } else if (dynamic_cast<VariableNode*>(node)) {
-            return visit_Variable(dynamic_cast<VariableNode*>(node));
-        } else {
-            throw runtime_error("Unknown AST node");
-        }
+    void visit_Conditional(ConditionalNode* node) {
+        bool condition = dynamic_cast<VarBool*>(visit(node->condition))->value;
+        if (condition == true)
+            visit(node->if_body);
+        else
+            visit(node->else_body);
+    }
+
+    Var* visit(AST* node_) {
+        if (ConditionalNode* node = dynamic_cast<ConditionalNode*>(node_))
+            visit_Conditional(node);
+        else if (VariableNode* node = dynamic_cast<VariableNode*>(node_))
+            return visit_Variable(node);
+        else if (UnaryOpNode* node = dynamic_cast<UnaryOpNode*>(node_))
+            return visit_UnaryOp(node);
+        else if (AssignNode* node = dynamic_cast<AssignNode*>(node_))
+            visit_Assign(node);
+        else if (BlockNode* node = dynamic_cast<BlockNode*>(node_))
+            visit_Block(node);
+        else if (BinOpNode* node = dynamic_cast<BinOpNode*>(node_))
+            return visit_BinOp(node);
+        else if (BoolNode* node = dynamic_cast<BoolNode*>(node_))
+            return visit_Bool(node);
+        else if (IntNode* node = dynamic_cast<IntNode*>(node_))
+            return visit_Num(node);
+        else if (NoOp* node = dynamic_cast<NoOp*>(node_))
+            visit_NoOp(node);
+        else throw runtime_error("Unknown AST node");
         return 0;
     }
 
@@ -157,9 +165,12 @@ class Interpreter {
 #endif
 
 int main() {
-    string x = "a = 2\nif a == 2:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5";
-    cout << x << endl;
-    Scanner scanner(x);
+    string text= "a = 2\nif a == 3:\n a = 3\nc = 3==1+2\nc= !c\nhubert = 3 * 5";
+    cout << "Evaluating file:" << endl << endl;
+    cout << "-------------------------------" << endl;
+    cout << text << endl;
+    cout << "-------------------------------" << endl << endl;
+    Scanner scanner(text);
     Parser parser(scanner);
     Interpreter interpreter(parser);
     interpreter.interpret();

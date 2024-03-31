@@ -15,11 +15,7 @@ class ConditionalNode : public AST {
     AST* if_body;
     AST* else_body;
 
-    ConditionalNode(AST* condition, AST* if_body, AST* else_body) {
-      this->condition = condition;
-      this->if_body = if_body;
-      this->else_body = else_body;
-    }
+    ConditionalNode(AST* condition, AST* if_body, AST* else_body) : condition(condition), if_body(if_body), else_body(else_body) {}
 };
 
 class UnaryOpNode : public AST {

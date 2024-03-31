@@ -54,7 +54,7 @@ class Scanner {
             advance();
             indent++;
         }
-        //cout << indent <cout< endl;
+        //cout << "%" << indent << endl;
         return Token(Token::INDENT, to_string(indent));
     }
 

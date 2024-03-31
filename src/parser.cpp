@@ -36,16 +36,20 @@ class Parser {
 
     void parse_indent() {
         if (current_token.type == Token::INDENT) {
-            int indent = stoi(current_token.value);
-            while (indent < indent_level.top()) {
-                indent_level.pop();
-            }
-            if (indent == indent_level.top()) {
-                eat(Token::INDENT);
-                return;
-            }
+            int n = stoi(current_token.value);
+            if (n >  indent_level.top()) indent(n);
+            if (n <  indent_level.top()) unindent(n);
+            if (n == indent_level.top()) return;
         }
         error();
+    }
+
+    void unindent(int n) {
+        while (n < indent_level.top()) indent_level.pop();
+    }
+
+    void indent(int n) {
+        indent_level.push(n);
     }
 
     AST* factor() {
@@ -125,18 +129,24 @@ class Parser {
 
     AST* block() {
         debugPrint("<block>");
-        BlockNode* root = new BlockNode();
-        root->children.push_back(statement());
-        int current_indent = indent_level.top();
-        while (indent_level.top() == current_indent && current_token.type == Token::END_LINE) {
-            eat(Token::END_LINE);
-            root->children.push_back(statement());
-        }
-        if (current_token.type == Token::ID) {
-            error();
+        
+        BlockNode* node = new BlockNode();
+        parse_indent();
+        int block_indent = indent_level.top();
+        eat(Token::INDENT);
+        node->children.push_back(statement());
+        eat(Token::END_LINE);
+        while (current_token.type != Token::END_LINE && current_token.type != Token::EOF_TOKEN) {
+            parse_indent();
+            if (indent_level.top() == block_indent) {
+                eat(Token::INDENT);
+                node->children.push_back(statement());
+                if (current_token.type == Token::END_LINE)
+                    eat(Token::END_LINE);
+            } else break;
         }
         debugPrint("</block>");
-        return root;
+        return node;
     }
 
     AST* else_statement() {
@@ -160,23 +170,19 @@ class Parser {
         AST* condition = expr();
         eat(Token::COLON);
         eat(Token::END_LINE);
-        int next_line_indent = stoi(current_token.value);
-        if (next_line_indent <= indent_level.top())
-            error();
-        else indent_level.push(next_line_indent);
         AST* if_body = block();
-        AST* else_body = else_statement();
+        //AST* else_body = else_statement();
+        NoOp* else_body = new NoOp();
         debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
     }
 
     AST* statement() {
-        parse_indent();
         debugPrint("<statement>");
         AST* node;
         if (current_token.type == Token::IF)
             node = if_statement();
-        if (current_token.type == Token::ID)
+        else if (current_token.type == Token::ID)
             node = assignment_statement();
         debugPrint("</statement>");
         if (node != nullptr) return node;
@@ -219,6 +225,7 @@ class Parser {
     }
 
     void debugPrint(string text) {
+        return;
         if (text[1] == '/') debug_depth--;
         for (int i = 0; i < debug_depth; i++) {
             cout << " ";
