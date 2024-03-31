@@ -18,6 +18,7 @@ class Parser {
 
 
   public:
+    bool DEBUG_MODE = false;
     Parser(Scanner &_) : scanner(_), current_token(scanner.get_next_token()) {
         indent_level.push(0);
     }
@@ -56,15 +57,18 @@ class Parser {
         debugPrint("<factor>");
         Token token = current_token;
         AST* node;
-        if (token.type == Token::EXCLAMATION) {
-            eat(token.type);
-            node = new UnaryOpNode(token, math_expr());
+        if (token.type == Token::NOT) {
+            eat(Token::NOT);
+            node = new UnaryOpNode(token, factor());
         } else if (token.type == Token::PLUS) {
             eat(Token::PLUS);
             node = new UnaryOpNode(token, factor());
         } else if (token.type == Token::MINUS) {
             eat(Token::MINUS);
             node = new UnaryOpNode(token, factor());
+        } else if (token.type == Token::STRING) {
+            eat(Token::STRING);
+            node = new StringNode(token);
         } else if (token.type == Token::BOOL) {
             eat(Token::BOOL);
             node = new BoolNode(token);
@@ -73,7 +77,7 @@ class Parser {
             node = new IntNode(token);
         } else if (token.type == Token::L_PAREN) {
             eat(Token::L_PAREN);
-            node = math_expr();
+            node = logic_expr();
             eat(Token::R_PAREN);
         } else {
             eat(Token::ID);
@@ -131,16 +135,10 @@ class Parser {
         debugPrint("<logic_expr>");
         AST* node = expr();
         //AST* node = expr();?
-        while (current_token.type == Token::NOT
-            || current_token.type == Token::AND 
-            || current_token.type == Token::OR) {
-            
+        while (current_token.type == Token::AND || current_token.type == Token::OR) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            if (current_token.type == Token::NOT)
-                node = new UnaryOpNode(operator_token, node);
-            else
-                node = new BinOpNode(node, operator_token, expr());
+            node = new BinOpNode(node, operator_token, expr());
         }
         debugPrint("</logic_expr>");
         return node;
@@ -168,6 +166,22 @@ class Parser {
         return node;
     }
 
+    AST* function_statement() {
+        debugPrint("<function>");
+        FunctionNode* node = new FunctionNode(current_token);
+        eat(Token::FUNCTION);
+        eat(Token::L_PAREN);
+        if (current_token.type != Token::R_PAREN)
+            node->parameters.push_back(logic_expr());
+        while (current_token.type == Token::COMMA) {
+            eat(Token::COMMA);
+            node->parameters.push_back(logic_expr());
+        }
+        eat(Token::R_PAREN);
+        debugPrint("</function>");
+        return node;
+    }
+
     AST* else_statement() {
         debugPrint("<else>");
         AST* node;
@@ -192,8 +206,7 @@ class Parser {
         if (current_token.type == Token::ELSE)
             else_body = else_statement();
         else
-            else_body = new NoOp();
-        //NoOp* else_body = new NoOp();
+            else_body = empty();
         debugPrint("</if>");
         return new ConditionalNode(condition, if_body, else_body);
     }
@@ -201,12 +214,10 @@ class Parser {
     AST* statement() {
         debugPrint("<statement>");
         AST* node;
-        if (current_token.type == Token::IF)
-            node = if_statement();
-        else if (current_token.type == Token::ID)
-            node = assignment_statement();
-        else if (current_token.type == Token::END_LINE)
-            node = empty();
+        if (current_token.type == Token::IF)            node = if_statement();
+        else if (current_token.type == Token::ID)       node = assignment_statement();
+        else if (current_token.type == Token::FUNCTION) node = function_statement();
+        else node = empty();
         debugPrint("</statement>");
         return node;
     }
@@ -247,7 +258,7 @@ class Parser {
     }
 
     void debugPrint(string text) {
-        return;
+        if (!DEBUG_MODE) return;
         if (text[1] == '/') debug_depth--;
         for (int i = 0; i < debug_depth; i++) {
             cout << " ";

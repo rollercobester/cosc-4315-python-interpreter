@@ -7,9 +7,13 @@
 using namespace std;
 
 struct Token {
-    enum TokenType { 
+    enum TokenType {
+
+        // punctuation
+        COMMA, DOT, SEMICOLON, COLON, DOUBLE_QUOTE, L_PAREN, R_PAREN, END_LINE, EOF_TOKEN,
+
         // boolean operators
-        EQUALS, NOT_EQUALS, LESS_THAN_EQUALS, GREATER_THAN_EQUALS, LESS_THAN, GREATER_THAN, EXCLAMATION,
+        EQUALS, NOT_EQUALS, LESS_THAN_EQUALS, GREATER_THAN_EQUALS, LESS_THAN, GREATER_THAN,
 
         // assignment operators
         PLUS_EQUALS, MINUS_EQUALS, TIMES_EQUALS, DIVIDE_EQUALS, ASSIGN,
@@ -17,11 +21,8 @@ struct Token {
         // mathematical operators
         PLUS, MINUS, TIMES, DIVIDE,
 
-        // punctuation
-        COMMA, DOT, SEMICOLON, COLON, L_PAREN, R_PAREN, END_LINE, EOF_TOKEN,
-
-        // variables
-        BOOL, INT, ID, INDENT,
+        // dynamic value tokens
+        BOOL, INT, STRING, ID, FUNCTION, INDENT,
 
         // keywords
         DEF, IF, ELIF, ELSE, RETURN, NOT, OR, AND
@@ -43,6 +44,7 @@ const unordered_map<string, Token::TokenType> keywords = {
     {"not",    Token::NOT},
     {"or",     Token::OR},
     {"and",    Token::AND},
+    {"print",  Token::FUNCTION},
     {"True",   Token::BOOL},
     {"False",  Token::BOOL},
 };

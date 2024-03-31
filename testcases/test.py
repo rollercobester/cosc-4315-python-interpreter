@@ -1,4 +1,3 @@
-a = 2
-b = 3 + 2
-john = 35
-hubert = 3 * 5
+a = False
+b = True
+print(a and (a and not b))

@@ -2,8 +2,7 @@
 
 x1 = 5
 y1 = x1 + 3 + 7
-z1 = x1 * 2 + y1 
-
+z1 = x1 * 2 + y1
 
 # if condition
 resA = 0

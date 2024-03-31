@@ -22,7 +22,6 @@ class UnaryOpNode : public AST {
   public:
     Token op;
     AST* expr;
-
     UnaryOpNode(Token op, AST* expr) : op(op), expr(expr) {}
 };
 
@@ -31,15 +30,20 @@ class BinOpNode : public AST {
     AST* left;
     Token op;
     AST* right;
-
     BinOpNode(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
+};
+
+class StringNode : public AST {
+  public:
+    Token token;
+    string value;
+    StringNode(Token token) : token(token), value(token.value) {}
 };
 
 class BoolNode : public AST {
   public:
     Token token;
     bool value;
-
     BoolNode(Token token) : token(token), value(token.value == "True") {}
 };
 
@@ -47,7 +51,6 @@ class IntNode : public AST {
   public:
     Token token;
     int value;
-
     IntNode(Token token) : token(token), value(stoi(token.value)) {}
 };
 
@@ -57,11 +60,17 @@ class BlockNode : public AST {
     BlockNode() {}
 };
 
+class FunctionNode : public AST {
+  public:
+    Token token;
+    vector<AST*> parameters;
+    FunctionNode(Token token) : token(token) {}
+};
+
 class VariableNode : public AST {
   public:
     Token token;
     string value;
-
     VariableNode(Token token) : token(token), value(token.value) {}
 };
 
@@ -70,7 +79,6 @@ class AssignNode : public AST {
     VariableNode* left;
     Token op;
     AST* right;
-
     AssignNode(VariableNode* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 

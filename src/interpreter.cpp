@@ -2,13 +2,13 @@
 #define INTERPRETER_CPP
 
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include "ast.cpp"
 #include "parser.cpp"
 #include "scanner.cpp"
 #include "token.cpp"
 #include "var.cpp"
-#include <fstream>
 
 using namespace std;
 
@@ -21,13 +21,10 @@ class Interpreter {
   public:
     Interpreter(Parser& _) : parser(_) {}
 
-    VarBool* visit_Bool(BoolNode* node) {
-        return new VarBool(node->value);
-    }
+    VarString* visit_String(StringNode* node) { return new VarString(node->value); }
+    VarBool*   visit_Bool(BoolNode* node)     { return new VarBool(node->value);   }
+    VarInt*    visit_Num(IntNode* node)       { return new VarInt(node->value);    }
 
-    VarInt* visit_Num(IntNode* node) {
-        return new VarInt(node->value);
-    }
 
     /* Handles two-operand boolean operations */
     Var* compute_BoolBinOp(Var* left, Token op, Var* right) {
@@ -57,6 +54,20 @@ class Interpreter {
         throw runtime_error("Invalid operation");
     }
 
+    /* Handles two-operand string operations */
+    Var* compute_StringBinOp(Var* left, Token op, Var* right) {
+        string text1 = dynamic_cast<VarString*>(left)->text;
+        string text2 = dynamic_cast<VarString*>(right)->text;
+        if (op.type == Token::PLUS)                return new VarString(text1 + text2);
+        if (op.type == Token::EQUALS)              return new VarBool(text1 == text2);
+        if (op.type == Token::NOT_EQUALS)          return new VarBool(text1 != text2);
+        if (op.type == Token::LESS_THAN)           return new VarBool(text1 <  text2);
+        if (op.type == Token::GREATER_THAN)        return new VarBool(text1 >  text2);
+        if (op.type == Token::LESS_THAN_EQUALS)    return new VarBool(text1 <= text2);
+        if (op.type == Token::GREATER_THAN_EQUALS) return new VarBool(text1 >= text2);
+        throw runtime_error("Invalid operation");
+    }
+
     /* Handles two-operand operations */
     Var* visit_BinOp(BinOpNode* node) {
         Var* left = visit(node->left);
@@ -65,6 +76,8 @@ class Interpreter {
             return compute_BoolBinOp(left, node->op, right);
         if (dynamic_cast<VarInt*>(left) && dynamic_cast<VarInt*>(right))
             return compute_NumBinOp(left, node->op, right);
+        if (dynamic_cast<VarString*>(left) && dynamic_cast<VarString*>(right))
+            return compute_StringBinOp(left, node->op, right);
         else throw runtime_error("Invalid operand type");
     }
 
@@ -72,7 +85,6 @@ class Interpreter {
     VarBool* compute_BoolUnOp(Var* value, Token op) {
         bool val = dynamic_cast<VarBool*>(value)->value;
         if (op.type == Token::NOT)         return new VarBool(!val);
-        if (op.type == Token::EXCLAMATION) return new VarBool(!val);
         else throw runtime_error("Invalid operation");
     }
 
@@ -111,12 +123,41 @@ class Interpreter {
         }
     }
 
+    Var* visit_Function(FunctionNode* node) {
+        string function = node->token.value;
+        if (function == "print") {
+            string result = "";
+            for (AST* param : node->parameters) {
+                Var* var =  visit(param);
+                if (VarString* varString = dynamic_cast<VarString*>(var)) {
+                    result += varString->text;
+                } else if (VarBool* varBool = dynamic_cast<VarBool*>(var)) {
+                    result += (varBool->value ? "True" : "False");
+                } else if (VarInt* varInt = dynamic_cast<VarInt*>(var)) {
+                    result += to_string(varInt->value);
+                }
+                result += " ";
+            }
+            result[result.length()-1] = '\n';
+            cout << result;
+            //cout << endl;
+        } else throw runtime_error("Invalid function");
+        return 0;
+    }
+
     Var* visit_Variable(VariableNode* node) {
         string var_name = node->value;
         if (GLOBAL_SCOPE.find(var_name) != GLOBAL_SCOPE.end()) {
             return GLOBAL_SCOPE[var_name];
         } else {
-            throw runtime_error(string("NameError: ") + var_name);
+            for (const auto& pair : GLOBAL_SCOPE) {
+                if (dynamic_cast<VarBool*>(pair.second)) {
+                    cout << pair.first << ": " << dynamic_cast<VarBool*>(pair.second)->value << endl;
+                } else if (dynamic_cast<VarInt*>(pair.second)) {
+                    cout << pair.first << ": " << dynamic_cast<VarInt*>(pair.second)->value << endl;
+                }
+            }
+            throw runtime_error("NameError: \"" + var_name + "\"");
         }
     }
 
@@ -129,37 +170,55 @@ class Interpreter {
     }
 
     Var* visit(AST* node_) {
-        if (ConditionalNode* node = dynamic_cast<ConditionalNode*>(node_))
+        if (ConditionalNode* node = dynamic_cast<ConditionalNode*>(node_)) {
             visit_Conditional(node);
-        else if (VariableNode* node = dynamic_cast<VariableNode*>(node_))
+        } else if (FunctionNode* node = dynamic_cast<FunctionNode*>(node_)) {
+            return visit_Function(node);
+        } else if (VariableNode* node = dynamic_cast<VariableNode*>(node_)) {
             return visit_Variable(node);
-        else if (UnaryOpNode* node = dynamic_cast<UnaryOpNode*>(node_))
+        } else if (UnaryOpNode* node = dynamic_cast<UnaryOpNode*>(node_)) {
             return visit_UnaryOp(node);
-        else if (AssignNode* node = dynamic_cast<AssignNode*>(node_))
+        } else if (AssignNode* node = dynamic_cast<AssignNode*>(node_)) {
             visit_Assign(node);
-        else if (BlockNode* node = dynamic_cast<BlockNode*>(node_))
+        } else if (StringNode* node = dynamic_cast<StringNode*>(node_)) {
+            return visit_String(node);
+        } else if (BlockNode* node = dynamic_cast<BlockNode*>(node_)) {
             visit_Block(node);
-        else if (BinOpNode* node = dynamic_cast<BinOpNode*>(node_))
+        } else if (BinOpNode* node = dynamic_cast<BinOpNode*>(node_)) {
             return visit_BinOp(node);
-        else if (BoolNode* node = dynamic_cast<BoolNode*>(node_))
+        } else if (BoolNode* node = dynamic_cast<BoolNode*>(node_)) {
             return visit_Bool(node);
-        else if (IntNode* node = dynamic_cast<IntNode*>(node_))
+        } else if (IntNode* node = dynamic_cast<IntNode*>(node_)) {
             return visit_Num(node);
-        else if (NoOp* node = dynamic_cast<NoOp*>(node_))
+        } else if (NoOp* node = dynamic_cast<NoOp*>(node_)) {
             visit_NoOp(node);
-        else throw runtime_error("Unknown AST node");
+        } else throw runtime_error("Unknown AST node");
         return 0;
     }
 
     int interpret() {
         AST* tree = parser.program();
-        visit(tree);
-        for (const auto& pair : GLOBAL_SCOPE) {
-            if (dynamic_cast<VarBool*>(pair.second)) {
-                cout << pair.first << ": " << dynamic_cast<VarBool*>(pair.second)->value << endl;
-            } else if (dynamic_cast<VarInt*>(pair.second)) {
-                cout << pair.first << ": " << dynamic_cast<VarInt*>(pair.second)->value << endl;
+
+        if (parser.DEBUG_MODE) {
+            cout << endl << "Program output:" << endl;
+            cout << "-------------------------------" << endl;
+            visit(tree);
+            cout << "-------------------------------" << endl << endl;
+        } else visit(tree);
+
+        if (parser.DEBUG_MODE) {
+            cout << endl << "Assigned variables:" << endl;
+            cout << "-------------------------------" << endl;
+            for (const auto& pair : GLOBAL_SCOPE) {
+                if (dynamic_cast<VarBool*>(pair.second)) {
+                    cout << pair.first << ": " << dynamic_cast<VarBool*>(pair.second)->value << endl;
+                } else if (dynamic_cast<VarInt*>(pair.second)) {
+                    cout << pair.first << ": " << dynamic_cast<VarInt*>(pair.second)->value << endl;
+                } else if (dynamic_cast<VarString*>(pair.second)) {
+                    cout << pair.first << ": " << dynamic_cast<VarString*>(pair.second)->text << endl;
+                }
             }
+            cout << "-------------------------------" << endl << endl;
         }
         return 0;
     }
@@ -194,15 +253,17 @@ int main(int argc, char *argv[]) {
     string filePath = argv[1];
     string fileContent = readFileIntoString(filePath);
 
-
-    string text= "a = 2\nif a == 4 or a == 3:\n a = 3\nelse:\n c = 3!=1+2\nd=4\nhubert = 3 * 5";
-    cout << "Evaluating file:" << endl << endl;
-    cout << "-------------------------------" << endl;
-    cout << fileContent << endl;
-    cout << "-------------------------------" << endl << endl;
     Scanner scanner(fileContent);
     Parser parser(scanner);
     Interpreter interpreter(parser);
+
+    if (parser.DEBUG_MODE) {
+        cout << endl << "Evaluating file:" << endl;
+        cout << "-------------------------------" << endl;
+        cout << fileContent << endl;
+        cout << "-------------------------------" << endl << endl;
+    }
+
     interpreter.interpret();
     return 0;
 }

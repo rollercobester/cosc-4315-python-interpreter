@@ -10,13 +10,11 @@ using namespace std;
 
 class Scanner {
 
-  private:
+  public:
     string text;
     int pos;
     bool next_token_is_indent = true;
     char current_char;
-
-  public:
     Scanner(string input) : text(input), pos(0), current_char(text[pos]) {}
 
     void error() {
@@ -54,7 +52,6 @@ class Scanner {
             advance();
             indent++;
         }
-        //cout << "%" << indent << endl;
         return Token(Token::INDENT, to_string(indent));
     }
 
@@ -107,6 +104,17 @@ class Scanner {
         }
     }
 
+    Token str() {
+        string result = "";
+        advance();
+        while (current_char != '\0' && current_char != '\n' && current_char != '"') {
+            result += current_char;
+            advance();
+        }
+        advance();
+        return Token(Token::STRING, result);
+    }
+
     Token get_next_token() {
         while (current_char != '\0') {
             if (next_token_is_indent) {
@@ -129,6 +137,8 @@ class Scanner {
                 return integer();
             } else if (isalpha(current_char)) {
                 return id();
+            } else if (current_char == '"') {
+                return str();
             } else if (current_char == '=' && peek() == '=') {
                 advance();
                 advance();
@@ -164,9 +174,6 @@ class Scanner {
             } else if (current_char == '=') {
                 advance();
                 return Token(Token::ASSIGN, "=");
-            } else if (current_char == '!') {
-                advance();
-                return Token(Token::EXCLAMATION, "!");
             } else if (current_char == '<') {
                 advance();
                 return Token(Token::LESS_THAN, "<");
@@ -194,6 +201,9 @@ class Scanner {
             } else if (current_char == ':') {
                 advance();
                 return Token(Token::COLON, ":");
+            } else if (current_char == ',') {
+                advance();
+                return Token(Token::COMMA, ",");
             }
             error();
         }

@@ -14,4 +14,4 @@ z = 0
 if resB == 43:
     z = 1
 
-#print("z = ", z)
+print("z = ", z)

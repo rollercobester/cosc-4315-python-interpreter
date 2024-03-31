@@ -8,8 +8,8 @@ b = 2
 a = 1
 
 #print results
-#print("a =", a)
-#print("b =", b)
+print("a =", a)
+print("b =", b)
 
 
 
