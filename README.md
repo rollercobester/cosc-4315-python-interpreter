@@ -23,20 +23,18 @@ Then, just run mypython.exe with the path of the python file you would like to r
 Heres an example of a file that uses the full functionality of the interpreter so far:
 
 ```python
-a = 3
-b = 4
-c = 5
+a = 5
+b = 12
+c = 13
 
-if (a > c or b > c):
-    if (a > c and a > b):
-        c = a
-    else:
-        c = b
-
-if (a * a  + b * b == c * c):
-    print("Triangle is a right triangle")
-    perimeter_check = a + b + c < 10
-    print("Perimeter is less than 10? ", perimeter)
+if a > c or b > c:
+    print("Invalid input")
 else:
-    print("Triangle is not a right triangle")
+    print("Calculating..") # For some reason our parser needs a line before another if statement
+    if a * a  + b * b == c * c:
+        print("Triangle is a right triangle")
+        perimeter = a + b + c < 15
+        print("Perimeter less than 15? ", perimeter)
+    else:
+        print("Triangle is not a right triangle")
 ```
