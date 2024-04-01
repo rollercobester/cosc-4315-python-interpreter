@@ -19,6 +19,9 @@ Then, just run mypython.exe with the path of the python file you would like to r
 
 `./mypython.exe in01.py`
 
+
+Heres an example of a file that uses the full functionality of the interpreter so far:
+
 ```python
 a = 3
 b = 4
