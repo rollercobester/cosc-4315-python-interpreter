@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Assuming your Python executable is named mypython.exe
-PYTHON_EXECUTABLE="./mypython.exe"
+# Set Python executable name based on the platform
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    PYTHON_EXECUTABLE="./mypython.exe"
+else
+    PYTHON_EXECUTABLE="python3"
+fi
 
 # Directory containing test cases
 TESTCASES_DIR="./testcases"
@@ -24,10 +28,18 @@ for input_file in "$TESTCASES_DIR"/in*.py; do
     # Get the corresponding expected output file
     expected_output_file="$TESTCASES_DIR/out${filename_no_ext#in}.txt"
 
-    # Compare the output file with the expected output file
-    if diff -q "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" &> /dev/null; then
-        echo "Test $filename_no_ext passed"
+    # Compare the output file with the expected output file based on platform
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        if fc /b "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" > nul; then
+            echo "Test $filename_no_ext passed"
+        else
+            echo "Test $filename_no_ext failed"
+        fi
     else
-        echo "Test $filename_no_ext failed"
+        if diff -q "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" &> /dev/null; then
+            echo "Test $filename_no_ext passed"
+        else
+            echo "Test $filename_no_ext failed"
+        fi
     fi
 done
