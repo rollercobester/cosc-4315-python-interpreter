@@ -30,12 +30,12 @@ for input_file in "$TESTCASES_DIR"/in*.py; do
 
     # Compare the output file with the expected output file based on platform
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        fc /b "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" > nul
-        if errorlevel 1; then
+        @echo off
+        fc fc /b "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" > nul && (
             echo "Test $filename_no_ext passed"
-        else
+        ) || (
             echo "Test $filename_no_ext failed"
-        fi
+        )
     else
         if diff -q "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" &> /dev/null; then
             echo "Test $filename_no_ext passed"
