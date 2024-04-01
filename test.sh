@@ -3,10 +3,8 @@
 # Set Python executable name based on the platform
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     PYTHON_EXECUTABLE="./mypython.exe"
-    FILE_COMPARISON_COMMAND="fc /b"
 else
     PYTHON_EXECUTABLE="python3"
-    FILE_COMPARISON_COMMAND="diff -q"
 fi
 
 # Directory containing test cases
@@ -31,9 +29,18 @@ for input_file in "$TESTCASES_DIR"/in*.py; do
     expected_output_file="$TESTCASES_DIR/out${filename_no_ext#in}.txt"
 
     # Compare the output file with the expected output file based on platform
-    if $FILE_COMPARISON_COMMAND "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" > /dev/null; then
-        echo "Test $filename_no_ext passed"
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        fc /b "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" > nul
+        if errorlevel 1; then
+            echo "Test $filename_no_ext passed"
+        else
+            echo "Test $filename_no_ext failed"
+        fi
     else
-        echo "Test $filename_no_ext failed"
+        if diff -q "$OUTPUT_DIR/output_$filename_no_ext.txt" "$expected_output_file" &> /dev/null; then
+            echo "Test $filename_no_ext passed"
+        else
+            echo "Test $filename_no_ext failed"
+        fi
     fi
 done
