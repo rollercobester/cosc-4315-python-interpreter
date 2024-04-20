@@ -22,7 +22,7 @@ struct Token {
         PLUS, MINUS, TIMES, DIVIDE,
 
         // dynamic value tokens
-        BOOL, INT, STRING, ID, FUNCTION, INDENT,
+        BOOL, INT, STRING, VARIABLE_ID, FUNCTION_ID, INDENT,
 
         // keywords
         DEF, IF, ELIF, ELSE, RETURN, NOT, OR, AND
@@ -44,7 +44,7 @@ const unordered_map<string, Token::TokenType> keywords = {
     {"not",    Token::NOT},
     {"or",     Token::OR},
     {"and",    Token::AND},
-    {"print",  Token::FUNCTION},
+    {"print",  Token::FUNCTION_ID},
     {"True",   Token::BOOL},
     {"False",  Token::BOOL},
 };

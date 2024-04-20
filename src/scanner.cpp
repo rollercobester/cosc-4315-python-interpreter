@@ -52,7 +52,11 @@ class Scanner {
             advance();
             indent++;
         }
-        return Token(Token::INDENT, to_string(indent));
+        if (current_char == '\n') {
+            next_token_is_indent = true;
+            advance();
+            return get_next_token();
+        } else return Token(Token::INDENT, to_string(indent));
     }
 
     void skip_whitespace() {
@@ -93,15 +97,15 @@ class Scanner {
 
     Token id() {
         string result = "";
-        while (current_char != '\0' && isalnum(current_char)) {
+        while (isalnum(current_char)) {
             result += current_char;
             advance();
         }
-        if (keywords.find(result) != keywords.end()) {
+        if (keywords.find(result) != keywords.end())
             return Token(keywords.at(result), result);
-        } else {
-            return Token(Token::ID, result);
-        }
+        if (current_char == '(')
+            return Token(Token::FUNCTION_ID, result);
+        else return Token(Token::VARIABLE_ID, result);
     }
 
     Token str() {

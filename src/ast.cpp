@@ -9,6 +9,36 @@ class AST {
     virtual ~AST() {}
 };
 
+class BlockNode : public AST {
+  public:
+    vector<AST*> children;
+    BlockNode() {}
+};
+
+class FunctionNode : public AST {
+  public:
+    string id;
+    vector<string> parameters;
+    AST* function_body;
+
+    FunctionNode(string name) : id(name), function_body(nullptr) {}
+    int get_num_parameters() { return parameters.size(); }
+};
+
+class FunctionCallNode : public AST {
+  public:
+    string id;
+    vector<AST*> parameters;
+    FunctionCallNode(string name) : id(name) {}
+    int get_num_parameters() { return parameters.size(); }
+};
+
+class ReturnNode : public AST {
+  public:
+    AST* value;
+    ReturnNode(AST* v) : value(v) {}
+};
+
 class ConditionalNode : public AST {
   public:
     AST* condition;
@@ -25,53 +55,36 @@ class UnaryOpNode : public AST {
     UnaryOpNode(Token op, AST* expr) : op(op), expr(expr) {}
 };
 
-class BinOpNode : public AST {
+class BinaryOpNode : public AST {
   public:
     AST* left;
     Token op;
     AST* right;
-    BinOpNode(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
+    BinaryOpNode(AST* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
 
 class StringNode : public AST {
   public:
-    Token token;
-    string value;
-    StringNode(Token token) : token(token), value(token.value) {}
+    string text;
+    StringNode(string t) : text(t) {}
 };
 
 class BoolNode : public AST {
   public:
-    Token token;
     bool value;
-    BoolNode(Token token) : token(token), value(token.value == "True") {}
+    BoolNode(bool v) : value(v) {}
 };
 
 class IntNode : public AST {
   public:
-    Token token;
     int value;
-    IntNode(Token token) : token(token), value(stoi(token.value)) {}
-};
-
-class BlockNode : public AST {
-  public:
-    vector<AST*> children;
-    BlockNode() {}
-};
-
-class FunctionNode : public AST {
-  public:
-    Token token;
-    vector<AST*> parameters;
-    FunctionNode(Token token) : token(token) {}
+    IntNode(int v) : value(v) {}
 };
 
 class VariableNode : public AST {
   public:
-    Token token;
-    string value;
-    VariableNode(Token token) : token(token), value(token.value) {}
+    string id;
+    VariableNode(string name) : id(name) {}
 };
 
 class AssignNode : public AST {
@@ -81,7 +94,6 @@ class AssignNode : public AST {
     AST* right;
     AssignNode(VariableNode* left, Token op, AST* right) : left(left), op(op), right(right) {}
 };
-
 
 class NoOp : public AST {
   public:

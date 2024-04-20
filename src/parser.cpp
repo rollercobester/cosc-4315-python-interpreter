@@ -68,20 +68,24 @@ class Parser {
             node = new UnaryOpNode(token, factor());
         } else if (token.type == Token::STRING) {
             eat(Token::STRING);
-            node = new StringNode(token);
+            node = new StringNode(token.value);
         } else if (token.type == Token::BOOL) {
             eat(Token::BOOL);
-            node = new BoolNode(token);
+            node = new BoolNode(token.value == "True");
         } else if (token.type == Token::INT) {
             eat(Token::INT);
-            node = new IntNode(token);
+            node = new IntNode(stoi(token.value));
         } else if (token.type == Token::L_PAREN) {
             eat(Token::L_PAREN);
             node = logic_expr();
             eat(Token::R_PAREN);
+        } else if (token.type == Token::FUNCTION_ID) {
+            node = function_call();
+            //eat(Token::FUNCTION_ID);
+            //node = new FunctionCallNode(token.value);
         } else {
-            eat(Token::ID);
-            node = new VariableNode(token);
+            eat(Token::VARIABLE_ID);
+            node = new VariableNode(token.value);
         }
         debugPrint("</factor>");
         return node;
@@ -93,7 +97,7 @@ class Parser {
         while (current_token.type == Token::TIMES || current_token.type == Token::DIVIDE) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            node = new BinOpNode(node, operator_token, factor());
+            node = new BinaryOpNode(node, operator_token, factor());
         }
         debugPrint("</term>");
         return node;
@@ -105,7 +109,7 @@ class Parser {
         while (current_token.type == Token::PLUS || current_token.type == Token::MINUS) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            node = new BinOpNode(node, operator_token, term());
+            node = new BinaryOpNode(node, operator_token, term());
         }
         debugPrint("</math_expr>");
         return node;
@@ -124,8 +128,8 @@ class Parser {
             
             Token operator_token = current_token;
             eat(operator_token.type);
-            //node = new BinOpNode(node, operator_token, expr());?
-            node = new BinOpNode(node, operator_token, math_expr());
+            //node = new BinaryOpNode(node, operator_token, expr());?
+            node = new BinaryOpNode(node, operator_token, math_expr());
         }
         debugPrint("</expr>");
         return node;
@@ -138,7 +142,7 @@ class Parser {
         while (current_token.type == Token::AND || current_token.type == Token::OR) {
             Token operator_token = current_token;
             eat(operator_token.type);
-            node = new BinOpNode(node, operator_token, expr());
+            node = new BinaryOpNode(node, operator_token, expr());
         }
         debugPrint("</logic_expr>");
         return node;
@@ -146,17 +150,23 @@ class Parser {
 
     AST* block() {
         debugPrint("<block>");
-        
         BlockNode* node = new BlockNode();
-        parse_indent();
-        int block_indent = indent_level.top();
-        eat(Token::INDENT);
-        node->children.push_back(statement());
-        eat(Token::END_LINE);
-        while (current_token.type != Token::END_LINE && current_token.type != Token::EOF_TOKEN) {
+        if (current_token.type == Token::INDENT) {
             parse_indent();
+            eat(Token::INDENT);
+        }
+        int block_indent = indent_level.top();
+        node->children.push_back(statement());
+        if (current_token.type == Token::END_LINE)
+            eat(Token::END_LINE);
+        while (current_token.type != Token::END_LINE && current_token.type != Token::EOF_TOKEN) {
+            if (current_token.type == Token::INDENT) {
+                parse_indent();
+                if (indent_level.top() == block_indent)
+                    eat(Token::INDENT);
+            }
             if (indent_level.top() == block_indent) {
-                eat(Token::INDENT);
+                //eat(Token::INDENT);
                 node->children.push_back(statement());
                 if (current_token.type == Token::END_LINE)
                     eat(Token::END_LINE);
@@ -166,10 +176,33 @@ class Parser {
         return node;
     }
 
-    AST* function_statement() {
+    AST* function_definition() {
+        debugPrint("<def>");
+        eat(Token::DEF);
+        FunctionNode* function = new FunctionNode(current_token.value);
+        eat(Token::FUNCTION_ID);
+        eat(Token::L_PAREN);
+        if (current_token.type != Token::R_PAREN) {
+            function->parameters.push_back(current_token.value);
+            eat(Token::VARIABLE_ID);
+        }
+        while(current_token.type == Token::COMMA) {
+            eat(Token::COMMA);
+            function->parameters.push_back(current_token.value);
+            eat(Token::VARIABLE_ID);
+        }
+        eat(Token::R_PAREN);
+        eat(Token::COLON);
+        eat(Token::END_LINE);
+        function->function_body = block();
+        debugPrint("</def>");
+        return function;
+    }
+
+    AST* function_call() {
         debugPrint("<function>");
-        FunctionNode* node = new FunctionNode(current_token);
-        eat(Token::FUNCTION);
+        FunctionCallNode* node = new FunctionCallNode(current_token.value);
+        eat(Token::FUNCTION_ID);
         eat(Token::L_PAREN);
         if (current_token.type != Token::R_PAREN)
             node->parameters.push_back(logic_expr());
@@ -182,44 +215,43 @@ class Parser {
         return node;
     }
 
-    AST* else_statement() {
+    AST* else_statement(int if_indent) {
         debugPrint("<else>");
-        AST* node;
-        eat(Token::ELSE);
-        eat(Token::COLON);
-        eat(Token::END_LINE);
-        node = block();
+        int else_indent = indent_level.top();
+        AST* else_body;
+        if (if_indent == else_indent) {
+            eat(Token::INDENT);
+        }
+        if (current_token.type == Token::ELSE) {
+            eat(Token::ELSE);
+            eat(Token::COLON);
+            eat(Token::END_LINE);
+            else_body = block();
+        } else else_body = empty();
         debugPrint("</else>");
-        return node;
+        return else_body;
     }
 
     AST* if_statement() {
         debugPrint("<if>");
+        int if_indent = indent_level.top();
         eat(Token::IF);
         AST* condition = logic_expr();
         eat(Token::COLON);
         eat(Token::END_LINE);
         AST* if_body = block();
-        parse_indent();
-        eat(Token::INDENT);
-        AST* else_body;
-        if (current_token.type == Token::ELSE)
-            else_body = else_statement();
-        else
-            else_body = empty();
         debugPrint("</if>");
+        AST* else_body = else_statement(if_indent);
         return new ConditionalNode(condition, if_body, else_body);
     }
 
-    AST* statement() {
-        debugPrint("<statement>");
-        AST* node;
-        if (current_token.type == Token::IF)            node = if_statement();
-        else if (current_token.type == Token::ID)       node = assignment_statement();
-        else if (current_token.type == Token::FUNCTION) node = function_statement();
-        else node = empty();
-        debugPrint("</statement>");
-        return node;
+    AST* return_statement() {
+        debugPrint("<return>");
+        eat(Token::RETURN);
+        AST* value = (current_token.type == Token::END_LINE ? empty() : logic_expr());
+        eat(Token::END_LINE);
+        return new ReturnNode(value);
+        debugPrint("</return>");
     }
 
     AST* assignment_statement() {
@@ -231,11 +263,26 @@ class Parser {
         debugPrint("</assign>");
         return new AssignNode(left, token, right);
     }
+    
+    AST* statement() {
+        debugPrint("<statement>");
+        AST* node;
+        if (current_token.type == Token::IF)               node = if_statement();
+        else if (current_token.type == Token::DEF)         node = function_definition();
+        else if (current_token.type == Token::RETURN)      node = return_statement();
+        else if (current_token.type == Token::VARIABLE_ID) node = assignment_statement();
+        else if (current_token.type == Token::FUNCTION_ID) {
+            node = function_call();
+            eat(Token::END_LINE);
+        } else node = empty();
+        debugPrint("</statement>");
+        return node;
+    }
 
     VariableNode* variable() {
         debugPrint("<var>");
-        VariableNode* node = new VariableNode(current_token);
-        eat(Token::ID);
+        VariableNode* node = new VariableNode(current_token.value);
+        eat(Token::VARIABLE_ID);
         debugPrint("</var>");
         return node;
     }
