@@ -19,7 +19,7 @@ class FunctionNode : public AST {
   public:
     string id;
     vector<string> parameters;
-    AST* function_body;
+    BlockNode* function_body;
 
     FunctionNode(string name) : id(name), function_body(nullptr) {}
     int get_num_parameters() { return parameters.size(); }

@@ -148,7 +148,7 @@ class Parser {
         return node;
     }
 
-    AST* block() {
+    BlockNode* block() {
         debugPrint("<block>");
         BlockNode* node = new BlockNode();
         if (current_token.type == Token::INDENT) {

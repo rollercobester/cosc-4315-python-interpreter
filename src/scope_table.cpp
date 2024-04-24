@@ -36,13 +36,6 @@ class ScopeTable {
         scope_table.pop_back();
     }
     void set(string id, AST* value) {
-        for (auto it = scope_table.rbegin(); it != scope_table.rend(); ++it) {
-            AST* result = it->get(id);
-            if (result != nullptr) {
-                it->set(id, value);
-                return;
-            }
-        }
         scope_table.back().set(id, value);
     }
     AST* get(string id) {

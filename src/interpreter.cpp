@@ -129,13 +129,15 @@ class Interpreter {
         } else if (FunctionNode* function = dynamic_cast<FunctionNode*>(scope_table.get(node->id))) {
             if (function->get_num_parameters() == node->get_num_parameters()) {
                 scope_table.increase_scope();
+                //cout << "$1 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
                 for (int i = 0; i < function->get_num_parameters(); i++) {
                     string parameter_id = function->parameters.at(i);
                     AST* parameter_value = visit(node->parameters.at(i));
                     scope_table.set(parameter_id, parameter_value);
                 }
-                AST* result = visit_Block(dynamic_cast<BlockNode*>(function->function_body));
+                AST* result = visit_Block(function->function_body);
                 scope_table.decrease_scope();
+                //cout << "$2 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
                 return result;
             } else throw runtime_error("Invalid number of parameters");
         } else throw runtime_error("Invalid function");
