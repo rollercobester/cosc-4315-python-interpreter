@@ -2,8 +2,12 @@ import os
 import subprocess
 
 test_directory = 'testcases/phase2'
-output_directory = 'output/'
-for filename in os.listdir(test_directory):
+output_directory = 'testcases/output/'
+
+if not os.path.exists(output_directory):
+    os.mkdir(output_directory)
+
+for filename in sorted(os.listdir(test_directory)):
     if not filename.startswith('in'): continue
     test_number = filename[2:filename.find('.')]
     input_filepath = os.path.join(test_directory, filename)
