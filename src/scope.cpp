@@ -1,5 +1,5 @@
-#ifndef SCOPE_TABLE_CPP
-#define SCOPE_TABLE_CPP
+#ifndef SCOPE_CPP
+#define SCOPE_CPP
 
 using namespace std;
 
@@ -7,12 +7,12 @@ using namespace std;
 #include <unordered_map>
 #include "ast.cpp"
 
-class ScopeTree {
+class Scope {
   private:
     unordered_map<string, AST*> scope;
-    ScopeTree* parent;
+    Scope* parent;
   public:
-    ScopeTree(ScopeTree* node = nullptr) : parent(node) {}
+    Scope(Scope* node = nullptr) : parent(node) {}
     void set(string id, AST* value) {
         if (scope.find(id) == scope.end())
             scope.insert({id, value});
@@ -23,10 +23,10 @@ class ScopeTree {
             return scope[id];
         return parent != nullptr ? parent->get(id) : nullptr;
     }
-    ScopeTree* increase_scope() {
-        return new ScopeTree(this);
+    AST* get_local(string id) {
+        return scope.find(id) != scope.end() ? scope[id] : nullptr;
     }
-    ScopeTree* decrease_scope() {
+    Scope* get_parent() {
         return parent;
     }
 };

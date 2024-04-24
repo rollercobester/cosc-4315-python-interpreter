@@ -7,7 +7,7 @@
 #include "ast.cpp"
 #include "parser.cpp"
 #include "scanner.cpp"
-#include "scope_table.cpp"
+#include "scope.cpp"
 #include "token.cpp"
 
 using namespace std;
@@ -15,21 +15,21 @@ using namespace std;
 class Interpreter {
   private:
     Parser parser;
-    ScopeTree scope_tree;
+    Scope* current_scope = new Scope();
 
   public:
-    Interpreter(Parser& _) : parser(_), scope_tree(ScopeTree(nullptr)) {}
+    Interpreter(Parser& p) : parser(p) {}
 
     /* Handles boolean operations */
     AST* compute_BoolOp(AST* first, Token op, AST* second = nullptr) {
-        // Unary operations
+        /* Unary operations */
         bool val1 = dynamic_cast<BoolNode*>(first)->value;
         if (second == nullptr) {
             if (op.type == Token::NOT) return new BoolNode(!val1);
             throw runtime_error("Invalid operation");
         }
 
-        // Binary operations
+        /* Binary operations */
         bool val2 = dynamic_cast<BoolNode*>(second)->value;
         if (op.type == Token::OR)         return new BoolNode(val1 || val2);
         if (op.type == Token::AND)        return new BoolNode(val1 && val2);
@@ -40,7 +40,7 @@ class Interpreter {
 
     /* Handles integer operations */
     AST* compute_IntOp(AST* first, Token op, AST* second = nullptr) {
-        // Unary operations
+        /* Unary operations */
         int val1 = dynamic_cast<IntNode*>(first)->value;
         if (second == nullptr) {
             if (op.type == Token::PLUS)  return new IntNode(+val1);
@@ -48,7 +48,7 @@ class Interpreter {
             throw runtime_error("Invalid operation");
         }
 
-        // Binary operations
+        /* Binary operations */
         int val2 = dynamic_cast<IntNode*>(second)->value;
         if (op.type == Token::PLUS)                return new IntNode(val1 + val2);
         if (op.type == Token::MINUS)               return new IntNode(val1 - val2);
@@ -100,13 +100,15 @@ class Interpreter {
         else throw runtime_error("Invalid operand type");
     }
 
+    /* Variable node, look up the variable value from current scope using the variable id */
     AST* visit_Variable(VariableNode* node) {
-        AST* value = scope_tree.get(node->id);
+        AST* value = current_scope->get(node->id);
         if (value != nullptr) return value;
         else throw runtime_error("NameError: \"" + node->id + "\"");
     }
 
-    void visit_PrintFunction(FunctionCallNode* node) {
+    /* Print function, handles any amount of arguments of type [Bool, String, Int] */
+    AST* visit_PrintFunction(FunctionCallNode* node) {
         string result = "";
         for (AST* param : node->parameters) {
             AST* var =  visit(param);
@@ -121,32 +123,40 @@ class Interpreter {
         }
         result[result.length()-1] = '\n';
         cout << result;
+        return nullptr;
     }
 
-    AST* visit_FunctionCall(FunctionCallNode* node) {
-        if (node->id == "print") {
-            visit_PrintFunction(node);
-            return nullptr;
-        } else if (FunctionNode* function = dynamic_cast<FunctionNode*>(scope_tree.get(node->id))) {
-            if (function->get_num_parameters() == node->get_num_parameters()) {
-                scope_tree = scope_tree.increase_scope();
-                cout << "HI" << endl;
-                //cout << "$1 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
-                for (int i = 0; i < function->get_num_parameters(); i++) {
-                    string parameter_id = function->parameters.at(i);
-                    AST* parameter_value = visit(node->parameters.at(i));
-                    scope_tree.set(parameter_id, parameter_value);
-                }
-                AST* result = visit_Block(function->function_body);
-                scope_tree = scope_tree.decrease_scope();
-                //cout << "$2 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
-                return result;
-            } else throw runtime_error("Invalid number of parameters");
-        } else throw runtime_error("Invalid function");
-    }
+    /* Function call node, check for params and update scope based on function definitions, then execute the function body */
+    AST* visit_FunctionCall(FunctionCallNode* function_call) {
+        if (function_call->id == "print")
+            return visit_PrintFunction(function_call);
+        
+        FunctionNode* function_def = dynamic_cast<FunctionNode*>(current_scope->get(function_call->id));
+        if (!function_def)
+            throw runtime_error("Invalid function");
 
-    void visit_FunctionDefinition(FunctionNode* node) {
-        scope_tree.set(node->id, node);
+        int expected_params = function_def->get_num_parameters();
+        int passed_params = function_call->get_num_parameters();
+        if (expected_params != passed_params)
+            throw runtime_error("Invalid number of parameters");
+
+        Scope* fallback = current_scope;
+        Scope* parent = current_scope->get_local(function_call->id) ? current_scope : current_scope->get_parent();;
+        Scope* child = new Scope(parent);
+
+        for (int i = 0; i < function_def->get_num_parameters(); i++) {
+            string parameter_id = function_def->parameters.at(i);
+            AST* parameter_value = visit(function_call->parameters.at(i));
+            child->set(parameter_id, parameter_value);
+        }
+
+        current_scope = child;
+        AST* result = visit_Block(function_def->function_body);
+
+        Scope* temp = current_scope;
+        current_scope = fallback;
+        delete temp;
+        return result;
     }
 
     AST* visit_Return(ReturnNode* node) {
@@ -158,10 +168,7 @@ class Interpreter {
         return (condition ? visit(node->if_body) : visit(node->else_body));
     }
 
-    void visit_Assign(AssignNode* node) {
-        scope_tree.set(node->left->id, visit(node->right));
-    }
-
+    /* Block node, visit all statements, definitions, or function calls. Exits the block when a value is returned */
     AST* visit_Block(BlockNode* node) {
         for (AST* child : node->children) {
             if (dynamic_cast<FunctionCallNode*>(child)) {
@@ -174,6 +181,14 @@ class Interpreter {
             }
         }
         return nullptr;
+    }
+
+    void visit_FunctionDefinition(FunctionNode* node) {
+        current_scope->set(node->id, node);
+    }
+    
+    void visit_Assign(AssignNode* node) {
+        current_scope->set(node->left->id, visit(node->right));
     }
 
     AST* visit(AST* node_) {
