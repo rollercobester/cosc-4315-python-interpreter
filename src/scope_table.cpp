@@ -39,11 +39,11 @@ class ScopeTable {
         scope_table.back().set(id, value);
     }
     AST* get(string id) {
-        for (auto it = scope_table.rbegin(); it != scope_table.rend(); ++it) {
-            AST* result = it->get(id);
-            if (result != nullptr) return result;
+        AST* result = nullptr;
+        for (auto it = scope_table.rbegin(); it != scope_table.rend() && result == nullptr; ++it) {
+            result = it->get(id);
         }
-        return nullptr;
+        return result;
     }
 };
 #endif
