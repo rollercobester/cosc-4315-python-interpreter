@@ -97,7 +97,7 @@ class Scanner {
 
     Token id() {
         string result = "";
-        while (isalnum(current_char)) {
+        while (isalnum(current_char) || current_char == '_') {
             result += current_char;
             advance();
         }
