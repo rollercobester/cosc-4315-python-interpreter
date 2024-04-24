@@ -5,9 +5,9 @@ def fn_a():
     return x
 
 def fn_b(x):
-    print("x =", x)
+    print("x =", x+1)
     fn_a()
     return x
 
 b = fn_b(10)
-print("b =", b)
+print("b =", b+1)

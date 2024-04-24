@@ -15,10 +15,10 @@ using namespace std;
 class Interpreter {
   private:
     Parser parser;
-    ScopeTable scope_table;
+    ScopeTree scope_tree;
 
   public:
-    Interpreter(Parser& _) : parser(_), scope_table(ScopeTable()) {}
+    Interpreter(Parser& _) : parser(_), scope_tree(ScopeTree(nullptr)) {}
 
     /* Handles boolean operations */
     AST* compute_BoolOp(AST* first, Token op, AST* second = nullptr) {
@@ -101,7 +101,7 @@ class Interpreter {
     }
 
     AST* visit_Variable(VariableNode* node) {
-        AST* value = scope_table.get(node->id);
+        AST* value = scope_tree.get(node->id);
         if (value != nullptr) return value;
         else throw runtime_error("NameError: \"" + node->id + "\"");
     }
@@ -127,17 +127,18 @@ class Interpreter {
         if (node->id == "print") {
             visit_PrintFunction(node);
             return nullptr;
-        } else if (FunctionNode* function = dynamic_cast<FunctionNode*>(scope_table.get(node->id))) {
+        } else if (FunctionNode* function = dynamic_cast<FunctionNode*>(scope_tree.get(node->id))) {
             if (function->get_num_parameters() == node->get_num_parameters()) {
-                scope_table.increase_scope();
+                scope_tree = scope_tree.increase_scope();
+                cout << "HI" << endl;
                 //cout << "$1 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
                 for (int i = 0; i < function->get_num_parameters(); i++) {
                     string parameter_id = function->parameters.at(i);
                     AST* parameter_value = visit(node->parameters.at(i));
-                    scope_table.set(parameter_id, parameter_value);
+                    scope_tree.set(parameter_id, parameter_value);
                 }
                 AST* result = visit_Block(function->function_body);
-                scope_table.decrease_scope();
+                scope_tree = scope_tree.decrease_scope();
                 //cout << "$2 " << dynamic_cast<IntNode*>(scope_table.get("b"))->value << endl;
                 return result;
             } else throw runtime_error("Invalid number of parameters");
@@ -145,7 +146,7 @@ class Interpreter {
     }
 
     void visit_FunctionDefinition(FunctionNode* node) {
-        scope_table.set(node->id, node);
+        scope_tree.set(node->id, node);
     }
 
     AST* visit_Return(ReturnNode* node) {
@@ -158,7 +159,7 @@ class Interpreter {
     }
 
     void visit_Assign(AssignNode* node) {
-        scope_table.set(node->left->id, visit(node->right));
+        scope_tree.set(node->left->id, visit(node->right));
     }
 
     AST* visit_Block(BlockNode* node) {
