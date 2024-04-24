@@ -7,8 +7,14 @@ This is a basic python interpreter that has the following functionality:
 - string, boolean, and integer variables
 - boolean and mathematical expressions
 - if and else statements
+- logical operator key words (and, or, not)
 - indent syntax validation
-- print statements
+- print statements with any amount of variables
+- local and global scope
+- recursive functions
+- nested functions
+- comments
+
 
 To run this program, first build the program using one of the following commands:
 
@@ -19,22 +25,10 @@ Then, just run mypython.exe with the path of the python file you would like to r
 
 `./mypython.exe in01.py`
 
+If you would like, I have a testing script that will automatically test the 21 test cases provided for phase 2.
+It prints out the result, passed if output is an exact match.
+All output files are sent to the testcases/output directory.
 
-Heres an example of a file that uses the full functionality of the interpreter so far:
+You can use it by running:
 
-```python
-a = 5
-b = 12
-c = 13
-
-if a > c or b > c:
-    print("Invalid input")
-else:
-    print("Calculating..") # For some reason our parser needs a line before another if statement
-    if a * a  + b * b == c * c:
-        print("Triangle is a right triangle")
-        perimeter = a + b + c < 15
-        print("Perimeter less than 15? ", perimeter)
-    else:
-        print("Triangle is not a right triangle")
-```
+`python3 test.py`
