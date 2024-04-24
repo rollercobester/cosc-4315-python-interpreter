@@ -126,6 +126,7 @@ class Interpreter {
     AST* visit_FunctionCall(FunctionCallNode* node) {
         if (node->id == "print") {
             visit_PrintFunction(node);
+            return nullptr;
         } else if (FunctionNode* function = dynamic_cast<FunctionNode*>(scope_table.get(node->id))) {
             if (function->get_num_parameters() == node->get_num_parameters()) {
                 scope_table.increase_scope();
