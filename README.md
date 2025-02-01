@@ -1,4 +1,4 @@
-# COSC 4315 // HW2 // basic python interpreter
+# COSC 4315 // basic python interpreter
 
 ## Coby Walters, Jason Pedder
 
